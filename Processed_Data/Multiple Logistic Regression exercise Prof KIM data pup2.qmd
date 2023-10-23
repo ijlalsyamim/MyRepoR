@@ -1,0 +1,22 @@
+---
+title: "Log Regression Exercise Prof KIM"
+format: html
+editor: visual
+---
+
+# read data 1st
+```{r}
+PUP2 <- read_excel(here('raw_data', 'PUP2.xlsx'))
+```
+# look at data 1st
+```{r}
+glimpse(PUP2)
+```
+```{r}
+summary(PUP2)
+```
+# data wrangling
+```{r}
+library(summarytools)
+```
+

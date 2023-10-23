@@ -1,0 +1,134 @@
+---
+title: "Linear Regression exercise prof KIM"
+format: html
+editor: visual
+---
+
+# Load Library first
+```{r}
+library(tidyverse)
+library(here)
+library(haven)
+library(readxl)
+library(kableExtra)
+library(broom)
+library(cdata)
+library(corrplot)
+library(survival)
+```
+# then read the data
+```{r}
+met <- read_xlsx(here('raw_data', 'metab_syndrome.xlsx')) %>% 
+  janitor::clean_names()
+glimpse(met)
+```
+# then make summary
+```{r}
+summary(met)
+```
+# convert variables to numerical
+```{r}
+met <- met %>% 
+  mutate_at(vars(-id), ~as.numeric(.))
+```
+# summary again
+```{r}
+summary(met)
+```
+# looks good
+
+# then do descriptive
+```{r}
+met %>% 
+  ggplot(aes(x = hba1c)) + 
+  geom_histogram() 
+```
+# wrangle a bit using filter and mutate
+```{r}
+met <- met %>% 
+  filter(hba1c > 2.5, hba1c < 25.0, 
+         ldl > 0.5, hdl > 0.2,  
+         totchol > 2.0, totchol < 15.0,
+         fbs > 2, fbs < 20,
+         pulse < 140) %>% 
+  mutate(bmi = weight/(height^2), 
+         overweight = if_else(bmi >=25.0,'overwt','not_overwt'),
+         overweight = factor(overweight),
+         dmdx = factor(dmdx, labels = c('NoDM', 'HaveDM')))
+```
+# summary again
+```{r}
+summary(met)
+```
+# spread hba1c data to better classification
+```{r}
+met %>% 
+  ggplot(aes(x = hba1c)) + 
+  geom_histogram() +
+  facet_wrap(~ dmdx)
+```
+# check multicollinearity
+```{r}
+met_num <- met %>% 
+  select_if(is.numeric)
+```
+```{r}
+cor.met <- cor(met_num, use="complete.obs", method="pearson")
+head(round(cor.met,2))
+```
+# do plot
+```{r}
+corrplot(cor.met, method="circle")
+```
+# do linear regression. easy in R
+```{r}
+met_hba1c <- lm(hba1c ~ fbs, data = met)
+summary(met_hba1c)
+```
+# add covariates
+```{r}
+met_hba1c_mv <- lm(hba1c ~ fbs + age + msbpr + mdbpr, data = met)
+summary(met_hba1c_mv)
+```
+# add dmdx in linear
+```{r}
+met_hba1c_mv2 <- lm(hba1c ~ fbs + age + msbpr + mdbpr + bmi + hdl + ldl + dmdx, 
+                    data = met)
+summary(met_hba1c_mv2)
+```
+# add interaction
+```{r}
+met_hba1c_ia <- lm(hba1c ~ fbs + age + msbpr + mdbpr + bmi + hdl + ldl + dmdx +
+                     dmdx*age, data = met)
+summary(met_hba1c_ia)
+```
+# inference
+```{r}
+tidy(met_hba1c_mv2, conf.int = TRUE)
+```
+# get predicted values
+```{r}
+pred_met <- augment(met_hba1c_mv2)
+head(pred_met)
+```
+# model checking with LINE assumptions
+```{r}
+pred_met %>% 
+  ggplot(aes(x = .resid)) +
+  geom_histogram()
+```
+# next
+```{r}
+pred_met %>% 
+  ggplot(aes(x = .fitted, y = .std.resid)) +
+  geom_point()
+```
+# further treatment of our data
+```{r}
+pred_met %>% 
+  filter(between(.std.resid, -3, 3)) %>% 
+  ggplot(aes(x = .fitted, y = .std.resid)) +
+  geom_point() 
+```
+## DONE. EXCELLENT!
+

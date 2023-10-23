@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.433">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Linear Regression exercise prof KIM</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="Linear Regression Exercise Prof KIM data metabolic syndrome_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Linear Regression Exercise Prof KIM data metabolic syndrome_files/libs/quarto-html/quarto.js"></script>
+<script src="Linear Regression Exercise Prof KIM data metabolic syndrome_files/libs/quarto-html/popper.min.js"></script>
+<script src="Linear Regression Exercise Prof KIM data metabolic syndrome_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Linear Regression Exercise Prof KIM data metabolic syndrome_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Linear Regression Exercise Prof KIM data metabolic syndrome_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Linear Regression Exercise Prof KIM data metabolic syndrome_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Linear Regression Exercise Prof KIM data metabolic syndrome_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Linear Regression Exercise Prof KIM data metabolic syndrome_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Linear Regression Exercise Prof KIM data metabolic syndrome_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Linear Regression exercise prof KIM</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="load-library-first" class="level1">
+<h1>Load Library first</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.3     ✔ readr     2.1.4
+✔ forcats   1.0.0     ✔ stringr   1.5.0
+✔ ggplot2   3.4.4     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.0
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>here() starts at C:/Users/User/Documents/R Project DrPH/MyRepoR</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(haven)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'kableExtra'
+
+The following object is masked from 'package:dplyr':
+
+    group_rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cdata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: wrapr
+
+Attaching package: 'wrapr'
+
+The following object is masked from 'package:dplyr':
+
+    coalesce
+
+The following objects are masked from 'package:tidyr':
+
+    pack, unpack
+
+The following object is masked from 'package:tibble':
+
+    view</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(corrplot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>corrplot 0.92 loaded</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survival)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="then-read-the-data" class="level1">
+<h1>then read the data</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>met <span class="ot">&lt;-</span> <span class="fu">read_xlsx</span>(<span class="fu">here</span>(<span class="st">'raw_data'</span>, <span class="st">'metab_syndrome.xlsx'</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  janitor<span class="sc">::</span><span class="fu">clean_names</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Expecting numeric in C2373 / R2373C3: got '#NULL!'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Expecting numeric in F2406 / R2406C6: got '#NULL!'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Expecting numeric in G2406 / R2406C7: got '#NULL!'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Expecting numeric in H2406 / R2406C8: got '#NULL!'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Expecting numeric in F2421 / R2421C6: got '#NULL!'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Expecting numeric in G2421 / R2421C7: got '#NULL!'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Expecting numeric in H2421 / R2421C8: got '#NULL!'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Expecting numeric in G2493 / R2493C7: got '#NULL!'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Expecting numeric in E4002 / R4002C5: got '#NULL!'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Expecting numeric in G4041 / R4041C7: got '#NULL!'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Expecting numeric in G4227 / R4227C7: got '#NULL!'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Expecting numeric in E4250 / R4250C5: got '#NULL!'</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(met)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 4,341
+Columns: 17
+$ id      &lt;chr&gt; "A11", "B11", "C12", "D11", "E11", "F11", "G12", "H12", "I12",…
+$ age     &lt;chr&gt; "46", "47", "48", "63", "39", "74", "43", "55", "22", "42", "4…
+$ dmdx    &lt;dbl&gt; 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1,…
+$ height  &lt;chr&gt; "1.6", "1.68", "1.47", "1.5", "1.51", "1.43", "1.77", "1.63", …
+$ weight  &lt;dbl&gt; 70.0, 52.0, 88.6, 81.0, 63.5, 50.0, 90.3, 69.0, 74.0, 53.2, 49…
+$ waist   &lt;dbl&gt; 89.0, 89.0, 84.0, 125.0, 87.0, 85.0, 101.0, 94.0, 87.0, 72.0, …
+$ neck    &lt;dbl&gt; 38.0, 38.0, 32.0, 34.0, 40.0, 34.5, 39.0, 43.3, 34.0, 33.0, 32…
+$ hip     &lt;dbl&gt; 97.0, 98.0, 94.0, 95.0, 105.0, 95.0, 112.0, 103.0, 106.0, 89.0…
+$ pulse   &lt;chr&gt; "80", "83", "78", "94", "99", "96", "82", "89", "75", "78", "6…
+$ msbpr   &lt;dbl&gt; 133.0, 163.0, 146.5, 206.5, 129.0, 190.5, 160.0, 138.0, 114.0,…
+$ mdbpr   &lt;dbl&gt; 83.5, 84.0, 93.5, 94.0, 70.0, 92.0, 101.0, 86.0, 63.5, 69.0, 8…
+$ hba1c   &lt;chr&gt; "5.3", "5.6", "5.7", "7.2", "5.4", "5.7", "5.0999999999999996"…
+$ fbs     &lt;chr&gt; "5.82", "6.29", "8.2899999999999991", "8.39", "5.23", "6.45", …
+$ mogtt2h &lt;chr&gt; "7.89", "6.05", "17.39", "#NULL!", "7.84", "14.88", "7.61", "#…
+$ totchol &lt;chr&gt; "5.27", "6.77", "5.87", "8.09", "5.55", "6.33", "7.48", "5.5",…
+$ hdl     &lt;chr&gt; "0.84", "1.45", "0.82", "1.79", "1.04", "1.62", "1.57", "1.159…
+$ ldl     &lt;chr&gt; "3.45", "3.7", "3.96", "4.68", "4.33", "3.03", "4.59", "3.8", …</code></pre>
+</div>
+</div>
+</section>
+<section id="then-make-summary" class="level1">
+<h1>then make summary</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(met)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      id                age                 dmdx           height         
+ Length:4341        Length:4341        Min.   :0.0000   Length:4341       
+ Class :character   Class :character   1st Qu.:0.0000   Class :character  
+ Mode  :character   Mode  :character   Median :0.0000   Mode  :character  
+                                       Mean   :0.1083                     
+                                       3rd Qu.:0.0000                     
+                                       Max.   :1.0000                     
+                                       NA's   :1                          
+     weight           waist             neck            hip        
+ Min.   : 30.00   Min.   : 50.80   Min.   :22.00   Min.   : 61.00  
+ 1st Qu.: 53.80   1st Qu.: 77.00   1st Qu.:33.00   1st Qu.: 91.00  
+ Median : 62.00   Median : 86.00   Median :35.00   Median : 97.00  
+ Mean   : 63.75   Mean   : 86.32   Mean   :35.38   Mean   : 97.88  
+ 3rd Qu.: 71.95   3rd Qu.: 95.00   3rd Qu.:38.00   3rd Qu.:104.00  
+ Max.   :187.80   Max.   :154.50   Max.   :50.00   Max.   :160.00  
+ NA's   :2        NA's   :2        NA's   :5       NA's   :2       
+    pulse               msbpr           mdbpr           hba1c          
+ Length:4341        Min.   : 68.5   Min.   : 41.50   Length:4341       
+ Class :character   1st Qu.:117.0   1st Qu.: 70.00   Class :character  
+ Mode  :character   Median :130.0   Median : 77.50   Mode  :character  
+                    Mean   :133.5   Mean   : 78.46                     
+                    3rd Qu.:146.5   3rd Qu.: 86.00                     
+                    Max.   :237.0   Max.   :128.50                     
+                                                                       
+     fbs              mogtt2h            totchol              hdl           
+ Length:4341        Length:4341        Length:4341        Length:4341       
+ Class :character   Class :character   Class :character   Class :character  
+ Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+                                                                            
+                                                                            
+                                                                            
+                                                                            
+     ldl           
+ Length:4341       
+ Class :character  
+ Mode  :character  
+                   
+                   
+                   
+                   </code></pre>
+</div>
+</div>
+</section>
+<section id="convert-variables-to-numerical" class="level1">
+<h1>convert variables to numerical</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>met <span class="ot">&lt;-</span> met <span class="sc">%&gt;%</span> </span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate_at</span>(<span class="fu">vars</span>(<span class="sc">-</span>id), <span class="sc">~</span><span class="fu">as.numeric</span>(.))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: There were 9 warnings in `mutate()`.
+The first warning was:
+ℹ In argument: `age = (structure(function (..., .x = ..1, .y = ..2, . = ..1)
+  ...`.
+Caused by warning in `as.numeric()`:
+! NAs introduced by coercion
+ℹ Run `dplyr::last_dplyr_warnings()` to see the 8 remaining warnings.</code></pre>
+</div>
+</div>
+</section>
+<section id="summary-again" class="level1">
+<h1>summary again</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(met)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      id                 age             dmdx            height     
+ Length:4341        Min.   :18.00   Min.   :0.0000   Min.   :1.270  
+ Class :character   1st Qu.:38.00   1st Qu.:0.0000   1st Qu.:1.510  
+ Mode  :character   Median :48.00   Median :0.0000   Median :1.560  
+                    Mean   :47.84   Mean   :0.1083   Mean   :1.568  
+                    3rd Qu.:58.00   3rd Qu.:0.0000   3rd Qu.:1.630  
+                    Max.   :89.00   Max.   :1.0000   Max.   :1.960  
+                    NA's   :1       NA's   :1        NA's   :1      
+     weight           waist             neck            hip        
+ Min.   : 30.00   Min.   : 50.80   Min.   :22.00   Min.   : 61.00  
+ 1st Qu.: 53.80   1st Qu.: 77.00   1st Qu.:33.00   1st Qu.: 91.00  
+ Median : 62.00   Median : 86.00   Median :35.00   Median : 97.00  
+ Mean   : 63.75   Mean   : 86.32   Mean   :35.38   Mean   : 97.88  
+ 3rd Qu.: 71.95   3rd Qu.: 95.00   3rd Qu.:38.00   3rd Qu.:104.00  
+ Max.   :187.80   Max.   :154.50   Max.   :50.00   Max.   :160.00  
+ NA's   :2        NA's   :2        NA's   :5       NA's   :2       
+     pulse            msbpr           mdbpr            hba1c       
+ Min.   : 24.00   Min.   : 68.5   Min.   : 41.50   Min.   : 0.200  
+ 1st Qu.: 70.00   1st Qu.:117.0   1st Qu.: 70.00   1st Qu.: 5.100  
+ Median : 78.00   Median :130.0   Median : 77.50   Median : 5.400  
+ Mean   : 79.27   Mean   :133.5   Mean   : 78.46   Mean   : 5.805  
+ 3rd Qu.: 86.00   3rd Qu.:146.5   3rd Qu.: 86.00   3rd Qu.: 5.800  
+ Max.   :975.00   Max.   :237.0   Max.   :128.50   Max.   :15.000  
+ NA's   :8                                         NA's   :70      
+      fbs            mogtt2h          totchol            hdl       
+ Min.   : 0.160   Min.   : 0.160   Min.   : 0.180   Min.   :0.080  
+ 1st Qu.: 4.400   1st Qu.: 5.150   1st Qu.: 4.970   1st Qu.:1.110  
+ Median : 5.150   Median : 6.600   Median : 5.700   Median :1.320  
+ Mean   : 5.622   Mean   : 7.343   Mean   : 5.792   Mean   :1.346  
+ 3rd Qu.: 5.982   3rd Qu.: 8.410   3rd Qu.: 6.530   3rd Qu.:1.540  
+ Max.   :34.270   Max.   :37.370   Max.   :23.140   Max.   :4.430  
+ NA's   :117      NA's   :608      NA's   :54       NA's   :52     
+      ldl       
+ Min.   : 0.14  
+ 1st Qu.: 2.79  
+ Median : 3.46  
+ Mean   : 3.55  
+ 3rd Qu.: 4.25  
+ Max.   :10.56  
+ NA's   :53     </code></pre>
+</div>
+</div>
+</section>
+<section id="looks-good" class="level1">
+<h1>looks good</h1>
+</section>
+<section id="then-do-descriptive" class="level1">
+<h1>then do descriptive</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>met <span class="sc">%&gt;%</span> </span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> hba1c)) <span class="sc">+</span> </span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 70 rows containing non-finite values (`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Linear-Regression-Exercise-Prof-KIM-data-metabolic-syndrome_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="wrangle-a-bit-using-filter-and-mutate" class="level1">
+<h1>wrangle a bit using filter and mutate</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>met <span class="ot">&lt;-</span> met <span class="sc">%&gt;%</span> </span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(hba1c <span class="sc">&gt;</span> <span class="fl">2.5</span>, hba1c <span class="sc">&lt;</span> <span class="fl">25.0</span>, </span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>         ldl <span class="sc">&gt;</span> <span class="fl">0.5</span>, hdl <span class="sc">&gt;</span> <span class="fl">0.2</span>,  </span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>         totchol <span class="sc">&gt;</span> <span class="fl">2.0</span>, totchol <span class="sc">&lt;</span> <span class="fl">15.0</span>,</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>         fbs <span class="sc">&gt;</span> <span class="dv">2</span>, fbs <span class="sc">&lt;</span> <span class="dv">20</span>,</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>         pulse <span class="sc">&lt;</span> <span class="dv">140</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">bmi =</span> weight<span class="sc">/</span>(height<span class="sc">^</span><span class="dv">2</span>), </span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">overweight =</span> <span class="fu">if_else</span>(bmi <span class="sc">&gt;=</span><span class="fl">25.0</span>,<span class="st">'overwt'</span>,<span class="st">'not_overwt'</span>),</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">overweight =</span> <span class="fu">factor</span>(overweight),</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">dmdx =</span> <span class="fu">factor</span>(dmdx, <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">'NoDM'</span>, <span class="st">'HaveDM'</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="summary-again-1" class="level1">
+<h1>summary again</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(met)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      id                 age           dmdx          height     
+ Length:4078        Min.   :18.0   NoDM  :3631   Min.   :1.270  
+ Class :character   1st Qu.:38.0   HaveDM: 447   1st Qu.:1.510  
+ Mode  :character   Median :48.0                 Median :1.560  
+                    Mean   :47.9                 Mean   :1.569  
+                    3rd Qu.:58.0                 3rd Qu.:1.630  
+                    Max.   :89.0                 Max.   :1.960  
+                    NA's   :1                                   
+     weight           waist             neck            hip        
+ Min.   : 30.00   Min.   : 50.80   Min.   :22.00   Min.   : 61.00  
+ 1st Qu.: 53.80   1st Qu.: 77.00   1st Qu.:33.00   1st Qu.: 91.00  
+ Median : 62.23   Median : 86.00   Median :35.00   Median : 97.00  
+ Mean   : 63.89   Mean   : 86.41   Mean   :35.36   Mean   : 97.89  
+ 3rd Qu.: 72.00   3rd Qu.: 95.00   3rd Qu.:38.00   3rd Qu.:104.00  
+ Max.   :187.80   Max.   :154.50   Max.   :50.00   Max.   :160.00  
+ NA's   :2        NA's   :1        NA's   :3       NA's   :1       
+     pulse            msbpr           mdbpr            hba1c       
+ Min.   : 24.00   Min.   : 68.5   Min.   : 41.50   Min.   : 3.800  
+ 1st Qu.: 69.00   1st Qu.:117.1   1st Qu.: 70.00   1st Qu.: 5.100  
+ Median : 78.00   Median :130.0   Median : 78.00   Median : 5.400  
+ Mean   : 78.29   Mean   :133.8   Mean   : 78.57   Mean   : 5.803  
+ 3rd Qu.: 86.00   3rd Qu.:147.0   3rd Qu.: 86.00   3rd Qu.: 5.800  
+ Max.   :135.00   Max.   :237.0   Max.   :128.50   Max.   :15.000  
+                                                                   
+      fbs            mogtt2h          totchol           hdl       
+ Min.   : 2.030   Min.   : 0.160   Min.   : 2.13   Min.   :0.280  
+ 1st Qu.: 4.442   1st Qu.: 5.200   1st Qu.: 4.97   1st Qu.:1.110  
+ Median : 5.160   Median : 6.630   Median : 5.70   Median :1.320  
+ Mean   : 5.628   Mean   : 7.368   Mean   : 5.79   Mean   :1.354  
+ 3rd Qu.: 6.000   3rd Qu.: 8.430   3rd Qu.: 6.52   3rd Qu.:1.550  
+ Max.   :19.340   Max.   :37.370   Max.   :14.91   Max.   :4.430  
+                  NA's   :477                                     
+      ldl             bmi              overweight  
+ Min.   : 0.51   Min.   : 9.241   not_overwt:1922  
+ 1st Qu.: 2.81   1st Qu.:22.232   overwt    :2154  
+ Median : 3.46   Median :25.402   NA's      :   2  
+ Mean   : 3.56   Mean   :25.938                    
+ 3rd Qu.: 4.23   3rd Qu.:28.870                    
+ Max.   :10.56   Max.   :57.040                    
+                 NA's   :2                         </code></pre>
+</div>
+</div>
+</section>
+<section id="spread-hba1c-data-to-better-classification" class="level1">
+<h1>spread hba1c data to better classification</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>met <span class="sc">%&gt;%</span> </span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> hba1c)) <span class="sc">+</span> </span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>() <span class="sc">+</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> dmdx)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Linear-Regression-Exercise-Prof-KIM-data-metabolic-syndrome_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="check-multicollinearity" class="level1">
+<h1>check multicollinearity</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>met_num <span class="ot">&lt;-</span> met <span class="sc">%&gt;%</span> </span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select_if</span>(is.numeric)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>cor.met <span class="ot">&lt;-</span> <span class="fu">cor</span>(met_num, <span class="at">use=</span><span class="st">"complete.obs"</span>, <span class="at">method=</span><span class="st">"pearson"</span>)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">round</span>(cor.met,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         age height weight waist neck  hip pulse msbpr mdbpr hba1c   fbs
+age     1.00  -0.21  -0.08  0.12 0.04 0.00 -0.15  0.45  0.23  0.15  0.17
+height -0.21   1.00   0.41  0.15 0.40 0.11 -0.19 -0.05  0.01 -0.04 -0.05
+weight -0.08   0.41   1.00  0.80 0.67 0.80 -0.03  0.18  0.27  0.17  0.13
+waist   0.12   0.15   0.80  1.00 0.60 0.61  0.00  0.27  0.29  0.23  0.16
+neck    0.04   0.40   0.67  0.60 1.00 0.51 -0.04  0.21  0.25  0.14  0.15
+hip     0.00   0.11   0.80  0.61 0.51 1.00  0.04  0.16  0.23  0.15  0.13
+       mogtt2h totchol   hdl   ldl   bmi
+age       0.20    0.31  0.17  0.26  0.02
+height   -0.15   -0.08 -0.19 -0.07 -0.09
+weight    0.15    0.05 -0.23  0.10  0.87
+waist     0.22    0.12 -0.21  0.13  0.79
+neck      0.13    0.09 -0.29  0.10  0.51
+hip       0.18    0.08 -0.13  0.14  0.82</code></pre>
+</div>
+</div>
+</section>
+<section id="do-plot" class="level1">
+<h1>do plot</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">corrplot</span>(cor.met, <span class="at">method=</span><span class="st">"circle"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Linear-Regression-Exercise-Prof-KIM-data-metabolic-syndrome_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="do-linear-regression.-easy-in-r" class="level1">
+<h1>do linear regression. easy in R</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>met_hba1c <span class="ot">&lt;-</span> <span class="fu">lm</span>(hba1c <span class="sc">~</span> fbs, <span class="at">data =</span> met)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(met_hba1c)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = hba1c ~ fbs, data = met)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-6.0666 -0.4776 -0.1052  0.3091  8.5293 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) 3.502193   0.040972   85.48   &lt;2e-16 ***
+fbs         0.408802   0.006702   60.99   &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 1.021 on 4076 degrees of freedom
+Multiple R-squared:  0.4772,    Adjusted R-squared:  0.4771 
+F-statistic:  3720 on 1 and 4076 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+</div>
+</section>
+<section id="add-covariates" class="level1">
+<h1>add covariates</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>met_hba1c_mv <span class="ot">&lt;-</span> <span class="fu">lm</span>(hba1c <span class="sc">~</span> fbs <span class="sc">+</span> age <span class="sc">+</span> msbpr <span class="sc">+</span> mdbpr, <span class="at">data =</span> met)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(met_hba1c_mv)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = hba1c ~ fbs + age + msbpr + mdbpr, data = met)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-6.0630 -0.4718 -0.1051  0.3098  8.6575 
+
+Coefficients:
+             Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)  3.009202   0.111352  27.024  &lt; 2e-16 ***
+fbs          0.400576   0.006822  58.721  &lt; 2e-16 ***
+age          0.008054   0.001259   6.396 1.77e-10 ***
+msbpr       -0.004954   0.001080  -4.588 4.61e-06 ***
+mdbpr        0.010390   0.001928   5.390 7.43e-08 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 1.014 on 4072 degrees of freedom
+  (1 observation deleted due to missingness)
+Multiple R-squared:  0.485, Adjusted R-squared:  0.4845 
+F-statistic: 958.8 on 4 and 4072 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+</div>
+</section>
+<section id="add-dmdx-in-linear" class="level1">
+<h1>add dmdx in linear</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>met_hba1c_mv2 <span class="ot">&lt;-</span> <span class="fu">lm</span>(hba1c <span class="sc">~</span> fbs <span class="sc">+</span> age <span class="sc">+</span> msbpr <span class="sc">+</span> mdbpr <span class="sc">+</span> bmi <span class="sc">+</span> hdl <span class="sc">+</span> ldl <span class="sc">+</span> dmdx, </span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> met)</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(met_hba1c_mv2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = hba1c ~ fbs + age + msbpr + mdbpr + bmi + hdl + 
+    ldl + dmdx, data = met)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-5.0202 -0.4007 -0.0588  0.2985  8.9164 
+
+Coefficients:
+             Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)  3.170719   0.130759  24.249  &lt; 2e-16 ***
+fbs          0.318074   0.007102  44.785  &lt; 2e-16 ***
+age          0.003454   0.001210   2.854  0.00434 ** 
+msbpr       -0.004441   0.001003  -4.425 9.88e-06 ***
+mdbpr        0.007240   0.001827   3.964 7.51e-05 ***
+bmi          0.013409   0.003019   4.441 9.18e-06 ***
+hdl         -0.039540   0.044232  -0.894  0.37141    
+ldl          0.073575   0.014573   5.049 4.64e-07 ***
+dmdxHaveDM   1.330114   0.053865  24.693  &lt; 2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.9412 on 4066 degrees of freedom
+  (3 observations deleted due to missingness)
+Multiple R-squared:  0.5569,    Adjusted R-squared:  0.556 
+F-statistic: 638.8 on 8 and 4066 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+</div>
+</section>
+<section id="add-interaction" class="level1">
+<h1>add interaction</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>met_hba1c_ia <span class="ot">&lt;-</span> <span class="fu">lm</span>(hba1c <span class="sc">~</span> fbs <span class="sc">+</span> age <span class="sc">+</span> msbpr <span class="sc">+</span> mdbpr <span class="sc">+</span> bmi <span class="sc">+</span> hdl <span class="sc">+</span> ldl <span class="sc">+</span> dmdx <span class="sc">+</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>                     dmdx<span class="sc">*</span>age, <span class="at">data =</span> met)</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(met_hba1c_ia)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = hba1c ~ fbs + age + msbpr + mdbpr + bmi + hdl + 
+    ldl + dmdx + dmdx * age, data = met)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-5.0362 -0.4004 -0.0557  0.3003  8.9217 
+
+Coefficients:
+                Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)     3.168289   0.130759  24.230  &lt; 2e-16 ***
+fbs             0.317246   0.007129  44.501  &lt; 2e-16 ***
+age             0.003838   0.001244   3.085 0.002049 ** 
+msbpr          -0.004355   0.001005  -4.332 1.52e-05 ***
+mdbpr           0.007038   0.001833   3.840 0.000125 ***
+bmi             0.013302   0.003020   4.405 1.09e-05 ***
+hdl            -0.041075   0.044243  -0.928 0.353253    
+ldl             0.073038   0.014577   5.010 5.66e-07 ***
+dmdxHaveDM      1.639626   0.239192   6.855 8.21e-12 ***
+age:dmdxHaveDM -0.005475   0.004123  -1.328 0.184220    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.9411 on 4065 degrees of freedom
+  (3 observations deleted due to missingness)
+Multiple R-squared:  0.5571,    Adjusted R-squared:  0.5561 
+F-statistic: 568.1 on 9 and 4065 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+</div>
+</section>
+<section id="inference" class="level1">
+<h1>inference</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(met_hba1c_mv2, <span class="at">conf.int =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 9 × 7
+  term        estimate std.error statistic   p.value conf.low conf.high
+  &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
+1 (Intercept)  3.17      0.131      24.2   1.96e-121  2.91      3.43   
+2 fbs          0.318     0.00710    44.8   0          0.304     0.332  
+3 age          0.00345   0.00121     2.85  4.34e-  3  0.00108   0.00583
+4 msbpr       -0.00444   0.00100    -4.43  9.88e-  6 -0.00641  -0.00247
+5 mdbpr        0.00724   0.00183     3.96  7.51e-  5  0.00366   0.0108 
+6 bmi          0.0134    0.00302     4.44  9.18e-  6  0.00749   0.0193 
+7 hdl         -0.0395    0.0442     -0.894 3.71e-  1 -0.126     0.0472 
+8 ldl          0.0736    0.0146      5.05  4.64e-  7  0.0450    0.102  
+9 dmdxHaveDM   1.33      0.0539     24.7   1.47e-125  1.22      1.44   </code></pre>
+</div>
+</div>
+</section>
+<section id="get-predicted-values" class="level1">
+<h1>get predicted values</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>pred_met <span class="ot">&lt;-</span> <span class="fu">augment</span>(met_hba1c_mv2)</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(pred_met)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 16
+  .rownames hba1c   fbs   age msbpr mdbpr   bmi   hdl   ldl dmdx   .fitted
+  &lt;chr&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;    &lt;dbl&gt;
+1 1           5.3  5.82    46  133   83.5  27.3  0.84  3.45 NoDM      5.78
+2 2           5.6  6.29    47  163   84    18.4  1.45  3.7  NoDM      5.68
+3 3           5.7  8.29    48  146.  93.5  41.0  0.82  3.96 NoDM      6.81
+4 4           7.2  8.39    63  206.  94    36    1.79  4.68 HaveDM    7.91
+5 5           5.4  5.23    39  129   70    27.8  1.04  4.33 NoDM      5.55
+6 6           5.7  6.45    74  190.  92    24.5  1.62  3.03 NoDM      5.78
+# ℹ 5 more variables: .resid &lt;dbl&gt;, .hat &lt;dbl&gt;, .sigma &lt;dbl&gt;, .cooksd &lt;dbl&gt;,
+#   .std.resid &lt;dbl&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="model-checking-with-line-assumptions" class="level1">
+<h1>model checking with LINE assumptions</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>pred_met <span class="sc">%&gt;%</span> </span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> .resid)) <span class="sc">+</span></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Linear-Regression-Exercise-Prof-KIM-data-metabolic-syndrome_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="next" class="level1">
+<h1>next</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>pred_met <span class="sc">%&gt;%</span> </span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> .fitted, <span class="at">y =</span> .std.resid)) <span class="sc">+</span></span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Linear-Regression-Exercise-Prof-KIM-data-metabolic-syndrome_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="further-treatment-of-our-data" class="level1">
+<h1>further treatment of our data</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>pred_met <span class="sc">%&gt;%</span> </span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">between</span>(.std.resid, <span class="sc">-</span><span class="dv">3</span>, <span class="dv">3</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> .fitted, <span class="at">y =</span> .std.resid)) <span class="sc">+</span></span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Linear-Regression-Exercise-Prof-KIM-data-metabolic-syndrome_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<section id="done.-excellent" class="level2">
+<h2 class="anchored" data-anchor-id="done.-excellent">DONE. EXCELLENT!</h2>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
