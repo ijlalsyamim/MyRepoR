@@ -1,0 +1,105 @@
+```{r}
+library(tidyverse)
+library(haven)
+library(here)
+library(broom)
+```
+
+
+```{r}
+data0 <- read_dta(here('raw_data', 'LRClass', 'datamssm_a.dta'), .name_repair = 'unique')
+glimpse(data0)
+```
+
+
+```{r}
+str(data0)
+```
+
+
+```{r}
+data0 <- data0 %>%
+  mutate(across(where(is.labelled), as_factor))
+summary(data0)
+```
+
+
+```{r}
+mod0 <- lm(hba1c ~ 1, data = data0)
+summary(mod0)
+```
+
+
+```{r}
+modldl <- lm(hba1c ~ ldl, data = data0)
+summary(modldl)
+```
+
+
+```{r}
+modldl.gender <- lm(hba1c ~ ldl + gender, data = data0)
+summary(modldl.gender)
+```
+
+```{r}
+modldl.gender.ia <- lm(hba1c ~ ldl + gender + ldl:gender, 
+                       data = data0)
+summary(modldl.gender.ia)
+```
+
+```{r}
+tidy(modldl, conf.int = TRUE)
+```
+
+```{r}
+tidy(modldl.gender, conf.int = TRUE)
+```
+
+```{r}
+tidy(modldl.gender.ia)
+```
+
+```{r}
+augment(modldl) %>% head()
+```
+
+```{r}
+augment(modldl.gender.ia) %>% tail()
+```
+
+```{r}
+plot(modldl)
+```
+
+```{r}
+plot(modldl.gender.ia)
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
