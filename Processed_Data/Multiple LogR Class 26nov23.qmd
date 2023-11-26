@@ -1,0 +1,151 @@
+---
+title: "Multiple Logistic Regression"
+format: html
+editor: visual
+---
+```{r}
+library(tidyverse)
+library(broom)
+library(haven)
+library(here)
+library(gtsummary)
+```
+
+
+```{r}
+data.log <- 
+  read_dta(here('raw_data', 'MLogRClass', 'diabetes.dta'))
+glimpse(data.log)
+```
+
+
+```{r}
+data.log <- 
+  data.log %>% 
+  mutate(across(where(is.labelled), as_factor))
+glimpse(data.log)
+```
+
+Univariate
+```{r}
+modlog.age <- glm(dmdx ~ age, family = binomial(link = 'logit'), 
+                  data = data.log)
+summary(modlog.age)
+```
+
+
+```{r}
+modlog.gen <- glm(dmdx ~ gender, family = binomial(link = 'logit'), 
+                  data = data.log)
+summary(modlog.gen)
+```
+
+# Multiple Logistic Regression
+```{r}
+modlog.age.gen <- glm(dmdx ~ age + gender, 
+                      family = binomial(link = 'logit'), 
+                      data = data.log)
+summary(modlog.age.gen)
+```
+
+# Check Interactions
+```{r}
+modlog.age.gen.ia <- glm(dmdx ~ age + gender + age:gender, 
+                         family = binomial(link = 'logit'), 
+                         data = data.log)
+summary(modlog.age.gen.ia)
+```
+# Inference
+# for log odds
+```{r}
+tidy(modlog.age.gen, 
+     conf.int = T)
+```
+
+# for odds ratio
+```{r}
+res.age.gen <- tidy(modlog.age.gen, 
+                    exponentiate = TRUE, 
+                    conf.int = T) 
+res.age.gen
+```
+
+# prediction
+```{r}
+augment(modlog.age.gen, type.predict = 'link') %>% 
+  head(10)
+```
+
+```{r}
+augment(modlog.age.gen, type.predict = 'response') %>%
+  head(10)
+```
+
+```{r}
+odds1 <- exp(-4.67149458 +  0.05072571*70 + 0.13513543*0) 
+odds1
+```
+
+```{r}
+prob1 <- (odds1/(1 + odds1)) 
+prob1
+```
+
+```{r}
+odds2 <- exp(-4.67149458 +  0.05072571*20 + 0.13513543*1) 
+odds2
+```
+
+```{r}
+prob2 <- (odds2/(1 + odds2)) 
+prob2
+```
+
+```{r}
+result1 <- tidy(modlog.age.gen,
+                con.int = T)
+```
+
+```{r}
+write.csv(result1, "result1.csv")
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
