@@ -1,0 +1,13 @@
+name: quarto_linear_short_practical2
+title: Quarto Linear Short Practical
+username: drph2
+account: drph2
+server: posit-connect.kk.usm.my
+hostUrl: https://posit-connect.kk.usm.my/__api__
+appId: 43
+bundleId: 30
+url: https://posit-connect.kk.usm.my/content/7be61e89-20e9-45cf-b08d-a77f47484a7d/
+version: 1
+asMultiple: FALSE
+asStatic: TRUE
+ignoredFiles: Quarto Linear Short Practical_files|Quarto-Linear-Short-Practical_files

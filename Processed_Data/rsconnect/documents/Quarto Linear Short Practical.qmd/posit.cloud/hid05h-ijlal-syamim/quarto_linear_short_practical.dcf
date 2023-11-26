@@ -1,0 +1,14 @@
+name: quarto_linear_short_practical
+title: Quarto Linear Short Practical
+username: hid05h-ijlal-syamim
+account: hid05h-ijlal-syamim
+server: posit.cloud
+hostUrl: https://api.posit.cloud/v1
+appId: 7091491
+bundleId: 7944103
+url: https://posit.cloud/content/7091491
+version: 1
+quarto_version: 1.3.433
+quarto_engines: knitr
+asMultiple: FALSE
+asStatic: FALSE
