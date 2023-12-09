@@ -1,0 +1,541 @@
+---
+title: "Assignment MLR"
+output: html_document
+date: "2023-12-09"
+---
+
+## **Introduction**
+
+# **Group Member**
+
+1 Ijlal Syamim bin Mohd Basri
+
+2 Muhammad Naim bin Deraman
+
+3 Mohd Aslam bin Ariffin
+
+4 'Abdul Muntaqim bin Abu Bakar
+
+5 Mohd Fahmin bin Kmarul Zaman
+
+# **Dataset**
+
+We will use medical personal cost dataset obtained from kaggle.com. This dataset contain medical information and costs billed by health insurance companies. It contains 1338 rows of data and the following columns: age, gender, BMI, children, smoker, region and insurance charges. 1 ID 2 age: age of primary beneficiary 3 sex: insurance contractor gender, female, male 4 bmi: Body mass index, providing an understanding of body, weights that are relatively high or low relative to height, objective index of body weight (kg / m \^ 2) using the ratio of height to weight, ideally 18.5 to 24.9 5 children: Number of children covered by health insurance / Number of dependents 6 smoker: Smoking 7 region: the beneficiary's residential area in the US, northeast, southeast, southwest, northwest. 8 charges: Individual medical costs billed by health insurance
+
+## **Method**
+
+We will employ the Linear Regression Analysis from the dataset.
+
+We want to determine the relationship between the insurance charges and its associated factors (independent variables) as below age: in year (numerical) sex: male and female (categorical) bmi: body mass index (numerical) children: number of dependant (numerical) smoker: smoking status (categorical) region: individual's residence (categorical)
+
+# **Load R packages**
+
+```{r}
+library(tidyverse)
+library(haven)
+library(here)
+library(gtsummary) 
+library(corrplot)
+library(knitr) 
+library(broom)
+library(tidyr)
+library(dplyr)
+```
+
+# **Read data**
+
+```{r}
+ourdata1 <- read_csv(here('raw_data', 'insurance.csv'))
+```
+
+# **Describe data**
+
+```{r}
+summary(ourdata1)
+```
+
+# **Another way to look at data**
+
+```{r}
+str(ourdata1)
+```
+
+# **Add numbering to first column because original datset has none of it**
+
+```{r}
+ourdata1$ID <- seq_len(nrow(ourdata1))
+ourdata1 <- ourdata1[, c("ID", names(ourdata1)[-which(names(ourdata1) == "ID")])]
+```
+
+# **re look at our data**
+
+```{r}
+summary(ourdata1)
+```
+
+# **Convert labelled variables to factor variables**
+
+```{r}
+ourdata1$sex <- as.factor(ourdata1$sex)
+ourdata1$region <- as.factor(ourdata1$region)
+ourdata1$smoker <- as.factor(ourdata1$smoker)
+summary(ourdata1)
+```
+
+# **use gtsummary to get desired descriptive analysis**
+
+```{r}
+ourdata1 %>%
+  select(-ID) %>%
+  tbl_summary(
+    statistic = list(all_continuous() ~ "{mean} ({sd})")
+  )
+```
+
+# **Explore and wrangle data - perform plots**
+
+Performs plots, to look for
+
+1 outlier
+
+2 range of data
+
+3 missing data
+
+4 error in data entry
+
+5 wrong groupings
+
+6 distribution of data
+
+Charges
+
+```{r}
+ggplot(ourdata1, aes(charges)) + 
+  geom_histogram()
+```
+
+Age
+
+```{r}
+ggplot(ourdata1, aes(age)) + 
+  geom_histogram()
+```
+
+BMI
+
+```{r}
+ggplot(ourdata1, aes(bmi)) + 
+  geom_histogram()
+```
+
+No of Dependant
+
+```{r}
+ggplot(ourdata1, aes(children)) + 
+  geom_histogram()
+```
+
+Sex
+
+```{r}
+ggplot(ourdata1, aes(x = sex)) + 
+  geom_bar()
+```
+
+Smoking Status
+
+```{r}
+ggplot(ourdata1, aes(x = smoker)) + 
+  geom_bar()
+```
+
+Region
+
+```{r}
+ggplot(ourdata1, aes(x = region)) + 
+  geom_bar()
+```
+
+# **check correlation between numerical variables**
+
+```{r}
+ourdata3 <- 
+  ourdata1 %>% 
+  select(where(is.numeric))
+```
+
+```{r}
+cor.ourdata1 <-
+  cor(ourdata3, 
+      use = "complete.obs", 
+      method = "pearson")
+head(round(cor.ourdata1, 2))
+```
+
+```{r}
+corrplot(cor.ourdata1, 
+         method = "circle")
+```
+
+variable that have negative correlation: age and charges
+
+# **perform univariate analysis**
+
+outcome: insurance charges independant variables: age, sex, children, bmi, smoker, region
+
+```{r}
+mod.age <- lm(charges ~ age, data = ourdata1)
+summary(mod.age)
+```
+
+```{r}
+tidy(mod.age, conf.int = TRUE)                                                     
+```
+
+```{r}
+mod.smoker <- lm(charges ~ smoker, data = ourdata1)
+summary(mod.smoker)
+```
+
+```{r}
+tidy(mod.smoker, conf.int = TRUE)
+```
+
+```{r}
+mod.region <- lm(charges ~ region, data = ourdata1)
+summary(mod.region)
+```
+
+```{r}
+tidy(mod.region, conf.int = TRUE)
+```
+
+```{r}
+mod.bmi <- lm(charges ~ bmi, data = ourdata1)
+summary(mod.bmi)
+```
+
+```{r}
+tidy(mod.bmi, conf.int = TRUE)
+```
+
+```{r}
+mod.sex <- lm(charges ~ sex, data = ourdata1)
+summary(mod.sex)
+```
+
+```{r}
+tidy(mod.sex, conf.int = TRUE)
+```
+
+```{r}
+mod.children <- lm(charges ~ children, data = ourdata1)
+summary(mod.children)
+```
+
+```{r}
+tidy(mod.children, conf.int = TRUE)
+```
+
+# **then proceed with multivariate analysis**
+
+Run automatic first to demonstrate which model is most suitable to put as final model
+
+# **Model selection**
+
+```{r}
+ourdata1.complete <- 
+  ourdata1 %>% 
+  dplyr::select(charges, age,smoker, region, bmi, children, sex) %>% 
+         drop_na()
+```
+
+# **backward selection**
+
+```{r}
+multivar.m <- lm(charges ~ age + smoker + bmi + sex + region + children,
+                 data = ourdata1)
+step.bw <- MASS::stepAIC(multivar.m, direction="backward")
+```
+
+```{r}
+cont.only.m <- lm(charges ~ 1, data = ourdata1.complete)
+multivar.m.complete <- 
+  lm(charges ~ age + smoker + bmi + sex + region + children, 
+     data = ourdata1.complete)
+```
+
+# **run both**
+
+```{r}
+step.both <- MASS::stepAIC(cont.only.m, direction="both",
+                     scope=list(upper = multivar.m.complete,
+                                lower = cont.only.m))
+```
+
+# **forward only**
+
+```{r}
+step.fw <- MASS::stepAIC(cont.only.m, direction = "forward",
+                    scope=list(upper = multivar.m.complete,
+                                lower = cont.only.m))
+```
+
+```{r}
+step.both$anova
+```
+
+```{r}
+step.fw$anova 
+```
+
+```{r}
+step.bw$anova
+```
+
+# **after all, after discussion with expert, our model selection would be age, smoking status and region**
+
+```{r}
+mod.age.smoker.region <- lm(charges ~ age + smoker + region, 
+                          data = ourdata1)
+summary(mod.age.smoker.region)
+```
+
+```{r}
+tidy(mod.age.smoker.region, conf.int = TRUE)
+```
+
+```{r}
+tbl_regression(mod.age.smoker.region) %>%  add_glance_table(include = c(adj.r.squared)) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  as_gt() %>%
+  gt::tab_header(title = "Table 1. Multiple Linear Regression Model 1",
+                 subtitle = "Without Interaction")
+```
+
+# **lets identify interactions and include it in our model**
+
+```{r}
+mod.age.smoker.region <- lm(charges ~ age + smoker + region, data = ourdata1)
+tidy(mod.age.smoker.region)
+```
+
+# **A model with covariates age and region and interaction between them**
+
+```{r}
+int.age.region <-lm(charges ~ age + region + age:region, data = ourdata1)
+summary(int.age.region)
+```
+
+# **model of smoker, region and interaction between them**
+
+```{r}
+int.smoker.region <-lm(charges ~ smoker + region + smoker:region, data = ourdata1)
+summary(int.smoker.region)
+```
+
+# **model of age, smoker and interaction between them**
+
+```{r}
+int.age.smoker <-lm(charges ~ age + smoker + age:smoker, data = ourdata1)
+summary(int.age.smoker)
+```
+
+# **look in tidy for better visualization**
+
+```{r}
+tidy(int.age.smoker, conf.int = TRUE)
+```
+
+```{r}
+tbl_regression(int.age.smoker) %>%  add_glance_table(include = c(adj.r.squared)) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  as_gt() %>%
+  gt::tab_header(title = "Table 2. Multiple Linear Regression Model 2",
+                 subtitle = "With Interaction")
+```
+
+# **check between 2 models using anova**
+
+```{r}
+anova(mod.age.smoker.region, int.age.smoker)
+```
+
+There is no difference between 2 models with or without interaction based on p-value \>0.05.
+
+From the ANOVA The p-value (Pr(\>F)) is greater than the typical significance level of 0.05. This suggests there is no difference between the two models.
+
+Hence, we choose multivariable model without interaction (mod.age.smoker.region) as our preliminary Final Model for Linear Regression due to model with the least variable is parsimonious model.
+
+```{r}
+prelim.final.m <- lm(charges ~ age + smoker + region, data = ourdata1)
+tidy(prelim.final.m)
+```
+
+# **Model assessment**
+
+```{r}
+prelim.final.m <- lm(charges ~ age + smoker + region, data = ourdata1)
+summary(prelim.final.m)
+```
+
+# **Diagnostics plots**
+
+```{r}
+plot(prelim.final.m)
+```
+
+# **check QQ plot**
+
+```{r}
+library(lmtest)
+```
+
+```{r}
+bptest(prelim.final.m)
+```
+
+```{r}
+shapiro.test(prelim.final.m$residuals)
+```
+
+# **Plot residuals against**
+
+independent variables in the model other variables not in the model
+
+# **Age vs residual**
+
+```{r}
+augment(prelim.final.m) %>%
+  ggplot(aes(x = age, y = .resid))+
+  geom_point()+
+  geom_smooth()
+```
+
+# **smoker vs residual**
+
+```{r}
+augment(prelim.final.m) %>%
+  ggplot(aes(x = smoker, y = .resid))+
+  geom_point()+
+  geom_smooth()
+```
+
+# **region vs residual**
+
+```{r}
+augment(prelim.final.m) %>%
+  ggplot(aes(x = region, y = .resid))+
+  geom_point()+
+  geom_smooth()
+```
+
+```{r}
+MASS::boxcox(prelim.final.m)
+```
+
+# **plot to check model assessment**
+
+Steps: Generate the fitted value Generate the residuals Generate the influential values Based on the values above,
+
+make some plots to check assumptions generate some diagnostic values to assess the outliers and find influential observations
+
+```{r}
+res.mod <- residuals(prelim.final.m)
+head(res.mod)
+```
+
+# **histogram**
+
+```{r}
+hist(res.mod)
+```
+
+```{r}
+library(DT)
+```
+
+# **Predictions**
+
+```{r}
+ourdata1.pred.res <- augment(prelim.final.m)
+ourdata1.pred.res %>% datatable()
+```
+
+# **Check for Influential**
+
+```{r}
+cutoff <- 4/((nrow(ourdata1)-length(prelim.final.m$coefficients)-2))
+plot(prelim.final.m, which = 4, cook.levels = cutoff)
+```
+
+```{r}
+ourdata1.pred.res %>% 
+  filter(.std.resid > 2 | .std.resid < -2 ) %>%
+  datatable()
+```
+
+```{r}
+non.influen.obs <- 
+  ourdata1.pred.res %>% 
+  filter(.std.resid < 2 & .std.resid > -2)
+```
+
+```{r}
+prelim.final.m2 <- lm(charges ~ age + smoker + region, data = non.influen.obs)
+summary(prelim.final.m2)
+```
+
+```{r}
+tidy(prelim.final.m2, conf.int = TRUE)
+```
+
+# **Rerun Diagnostic plots for preliminary final model 2**
+
+```{r}
+plot(prelim.final.m2)
+```
+
+```{r}
+bptest(prelim.final.m2)
+```
+
+```{r}
+shapiro.test(prelim.final.m2$residuals)
+```
+
+# **Final Model**
+
+```{r}
+summary(prelim.final.m2)
+```
+
+```{r}
+tidy(prelim.final.m2)
+```
+
+```{r}
+FinalModelMLR <- tbl_regression(prelim.final.m2) %>%  add_glance_table(include = c(adj.r.squared)) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  as_gt() %>%
+  gt::tab_header(title = "Table 3. Multiple Linear Regression (Final Model)")
+FinalModelMLR
+```
+
+## **Conclusion**
+
+# **Model Equation**
+
+Charges(\$)= -3268.27 + 277.33(age) + 24889.07(smoker) + -923.93(northwest) + 599.21(southeast) + -478.31(southwest)
+
+#Interpretation
+
+```         
+1 Multiple linear regression shows that age, smoker and region have significant linear relationship to insurance charges.  
+2 The model explained 83.9% of variation of insurance charges in the study sample
+3 Every 1 year increase of age will increase insurance charges by $ 277.
+4 Smoking status will increase the insurance charges by $ 24889.
+5 Living in southeast region will increase the insurance charges by $ 599 compared to northeast.
+6 However, living in northwest and southwest will decrease the insurance charges by $ 924 and $ 478 respectively compared to northeast region.
+```
