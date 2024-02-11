@@ -1,0 +1,79 @@
+---
+title: "Q4 Logistic 20212022"
+format: html
+editor: visual
+---
+
+```{r}
+library(here)
+library(haven)
+library(gtsummary)
+library(broom)
+library(psych)
+library(readxl)
+```
+
+
+```{r}
+log <- read.csv(here('raw_data', 'Q4.csv'))
+```
+
+
+```{r}
+str(log)
+```
+
+
+```{r}
+log %>%
+  tbl_summary(statistic = all_continuous() ~ "{mean} ({sd})")
+```
+
+
+```{r}
+log %>% describe()
+```
+
+
+```{r}
+barplot(table(log$outcome))
+```
+
+
+```{r}
+Model_Outcome <- glm(outcome ~ sepsis,
+                     family = binomial(link = 'logit'), data = log)
+```
+
+
+```{r}
+levels(log$outcome)
+
+```
+
+```{r}
+class(log$outcome)
+
+```
+
+
+```{r}
+logbaru <- ifelse(log$outcome == "yes", 1, 0)
+
+```
+
+
+```{r}
+Model_Outcome <- glm(outcome ~ sepsis,
+                     family = binomial(link = 'logit'), data = logbaru)
+```
+
+
+```{r}
+levels(logbaru$outcome)
+
+```
+
+
+```
+

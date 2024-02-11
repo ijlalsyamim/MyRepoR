@@ -1,0 +1,114 @@
+---
+title: "Logistic"
+format: html
+editor: visual
+---
+
+```{r}
+library(here)
+library(haven)
+library(tidyverse)
+library(gtsummary)
+```
+
+
+```{r}
+dm <- read_dta(here('raw_data', 'MLogRClass','diabetes.dta'))
+```
+
+
+```{r}
+summary(dm)
+```
+
+
+```{r}
+dm %>%
+  select(-codesub) %>%
+  tbl_summary(
+    statistic = list(all_continuous() ~ "{mean} ({sd})")
+  )
+```
+
+
+```{r}
+dm <- 
+  dm %>% 
+  mutate(across(where(is.labelled), as_factor))
+glimpse(dm)
+```
+
+
+
+```{r}
+summary(dm)
+```
+
+```{r}
+modlog.age.hba1c <- glm(dmdx ~ age + hba1c, 
+                      family = binomial(link = 'logit'), 
+                      data = dm)
+summary(modlog.age.hba1c)
+```
+
+
+```{r}
+modlog.age.hba1c.ia <- glm(dmdx ~ age + hba1c + age:hba1c, 
+                         family = binomial(link = 'logit'), 
+                         data = dm)
+summary(modlog.age.hba1c.ia)
+```
+
+
+```{r}
+anova(modlog.age.hba1c, modlog.age.hba1c.ia, test = 'Chisq')
+```
+
+log odds
+```{r}
+tidy(modlog.age.hba1c, 
+     conf.int = T)
+```
+
+odds ratio
+```{r}
+res.age.hba1c <- tidy(modlog.age.hba1c, 
+                    exponentiate = TRUE, 
+                    conf.int = T) 
+res.age.hba1c
+```
+
+
+```{r}
+augment(modlog.age.hba1c.ia, type.predict = 'link') %>%
+  head(10)
+```
+
+
+```{r}
+augment(modlog.age.hba1c.ia, type.predict =  'response') %>%
+  head(10)
+```
+
+
+```{r}
+tbl_regression(modlog.age.hba1c.ia) %>%  
+  bold_labels() %>% italicize_levels() %>%
+  as_gt() %>%
+  gt::tab_header(title = "Multiple Logistic Regression Model",
+                 subtitle = "Without Interaction")
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+

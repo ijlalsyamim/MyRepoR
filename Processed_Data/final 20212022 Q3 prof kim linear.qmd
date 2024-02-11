@@ -1,0 +1,87 @@
+---
+title: "Past Year 20212022"
+format: html
+editor: visual
+---
+
+```{r}
+library(haven)
+library(tidyverse)
+library(here)
+library(gtsummary)
+library(psych)
+library(broom)
+```
+
+
+```{r}
+linear <- read_csv(here('raw_data', 'Q3.csv'))
+```
+
+
+```{r}
+str(linear)
+```
+
+```{r}
+summary(linear)
+```
+
+
+```{r}
+linear %>% describe()
+```
+table for descriptive?
+```{r}
+linear %>%
+  tbl_summary(
+    statistic = list(all_continuous() ~ " {mean} ({sd})"))
+```
+
+
+Model A
+```{r}
+mlrA <- lm(HBA1C ~ DMDX + FBS + MOGTT2H, data = linear)
+summary(mlrA)
+```
+Model B
+```{r}
+mlrB <- lm(HBA1C ~ AGE + TOTCHOL, data = linear)
+summary(mlrB)
+```
+
+
+```{r}
+anova(mlrA, mlrB, test = 'Chisq')
+```
+
+
+```{r}
+prelim <- lm(HBA1C ~ DMDX + FBS + MOGTT2H, data = linear)
+
+```
+
+
+```{r}
+plot(prelim)
+```
+
+
+```{r}
+mod.res <- residuals(prelim)
+head(mod.res)
+hist(mod.res)
+```
+
+
+```{r}
+augment(prelim)
+```
+model A and interation
+```{r}
+mlrA.ia <- lm(HBA1C ~ DMDX + FBS + MOGTT2H + DMDX*FBS, data = linear)
+summary(mlrA.ia)
+```
+
+
+

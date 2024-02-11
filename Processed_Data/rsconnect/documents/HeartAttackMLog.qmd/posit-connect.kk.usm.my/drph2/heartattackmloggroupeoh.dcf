@@ -1,0 +1,12 @@
+name: heartattackmloggroupeoh
+title: HeartAttackMLogGroupEOH
+username: drph2
+account: drph2
+server: posit-connect.kk.usm.my
+hostUrl: https://posit-connect.kk.usm.my/__api__
+appId: 71
+bundleId: 68
+url: https://posit-connect.kk.usm.my/content/b082c101-294a-47b6-8bdf-43537324227c/
+version: 1
+asMultiple: FALSE
+asStatic: TRUE

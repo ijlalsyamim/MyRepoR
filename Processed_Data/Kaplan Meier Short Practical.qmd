@@ -1,0 +1,183 @@
+---
+title: "Practical Survival Analysis"
+format: html
+editor: visual
+---
+# Load R packages
+```{r}
+library(tidyverse)
+library(psych)
+library(corrplot)
+library(knitr)
+library(tidyr)
+library(survival)
+library(broom)
+library(here)
+library(dplyr)
+library(haven)
+```
+# Read data
+```{r}
+mydata <- read_dta(here('raw_data', 'stroke_outcome.dta'))
+```
+
+```{r}
+View(mydata)
+str(mydata)
+```
+
+```{r}
+mydata$dm3 <- as_factor(mydata$dm2)
+mydata$hpt3 <- as_factor(mydata$hpt2)
+```
+
+```{r}
+mydata <- mydata %>% mutate_if(is.labelled, ~as_factor(.))
+```
+
+# Exploratory data analysis
+```{r}
+summary(mydata)
+```
+# Dealing with date
+Here,
+
+we treat dates accordingly
+create a time variable in days
+add the duration into data frame
+```{r}
+library(lubridate)
+```
+
+```{r}
+mydata <- mydata %>% mutate(dur = mydata$doa %--% mydata$dod) %>%
+  mutate(dur = as.duration(dur))
+
+mydata <- mydata %>% mutate(dur_days = dur /ddays(1))
+
+```
+
+# Kaplan Meier estimates
+Kaplan-Meier survival analysis is a non-parametric survival analysis
+```{r}
+KM1 <- survfit(Surv(time = dur_days, event = event == 'dead') ~ 1,
+               type = "kaplan-meier", data = mydata)
+```
+Get the survival estimates results
+```{r}
+summary(KM1)
+```
+for time 0, probability of survival is (not death ahhh)
+```{r}
+1 - 4/262
+```
+then, for time 1
+```{r}
+1 -13/256
+```
+probability of cumulative survival from 0 to 1
+```{r}
+0.9847328 * 0.9492188
+```
+for time 2, 
+```{r}
+1 - 4/224
+```
+for time 1 to 2, take cumulative from 0 to 1 and add 2 in equation
+```{r}
+0.9347269 * 0.9821429
+```
+# Plot Kaplan-Meier curves
+Use survminer package
+```{r}
+library(survminer)
+```
+
+```{r}
+ggsurvplot(KM1, data = mydata, risk.table = TRUE,
+surv.median.line = 'hv')
+```
+For groups ie sex
+```{r}
+KM1.g <- survfit(Surv(time = dur_days, event = event == 'dead') ~ sex,
+                 type = "kaplan-meier", data = mydata)
+summary(KM1.g)
+```
+
+If we want to identify our desired tims, then
+```{r}
+summary(KM1, times= c(35, 40, 45))
+```
+
+Plots kaplan-meier based on group
+```{r}
+ggsurvplot(KM1.g, data = mydata, risk.table = TRUE,
+           linetype = c(3,6), pval = TRUE,
+           surv.median.line = 'hv')
+```
+Get the survival function
+
+the survival time for 25, 50 (median) and 75 percentile along with their 95 percent confidence intervals
+25 percentile means 25 percent of the sample have developed the event
+```{r}
+quantile(KM1, probs = c(0.25, 0.50, 0.75))
+```
+Perform the log-rank test
+```{r}
+logrank.sex <- survdiff(Surv(time = dur_days, event = event == 'dead') ~ sex,
+                        data = mydata, rho = 0)
+logrank.sex
+```
+
+# Cox proportional hazard (PH) regression
+Cox PH regression is a semi-parametric survival analysis
+
+We estimate two models here
+
+model with no covariate
+model with covariate gcs
+
+Model with no covariate
+```{r}
+cox.null <- coxph(Surv(time = dur_days, event = event == 'dead') ~ 1,
+                 data = mydata)
+summary(cox.null)
+```
+Model with covariate gcs
+```{r}
+cox.gcs <- coxph(Surv(time = dur_days, event = event == 'dead') ~ gcs,
+                 data = mydata)
+summary(cox.gcs)
+```
+# Cox PH regression with interaction term
+To illustrate comparison between model with and without interaction, we estimate the main effect model first then we develop a model with a two-way interaction term as a covariate
+
+Main effect model
+```{r}
+cox.gcs.age.noia <- coxph(Surv(time = dur_days, event = event == 'dead') ~ gcs +
+                       age + dm2 + hpt2, data = mydata)
+cox.gcs.age.noia
+```
+Model with interaction
+```{r}
+cox.gcs.age.ia <- coxph(Surv(time = dur_days, event = event == 'dead') ~ gcs +
+                       age + dm2 + hpt2 + gcs:age, data = mydata)
+cox.gcs.age.ia
+```
+# Model comparison
+The best is run likelihood ratio test
+```{r}
+anova(cox.gcs.age.ia, cox.gcs.age.noia, test = 'Chisq')
+
+```
+# Testing the assumption of proportional hazard
+We can use survival::cox.zph()
+```{r}
+prop.h <- cox.zph(cox.gcs.age.noia, 
+                  transform = 'km', 
+                  global = TRUE)
+prop.h
+```
+
+
+```{r}

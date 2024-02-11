@@ -1,0 +1,12 @@
+name: insurance_mlr_final2
+title: Insurance_MLR_Final
+username: drph2
+account: drph2
+server: posit-connect.kk.usm.my
+hostUrl: https://posit-connect.kk.usm.my/__api__
+appId: 67
+bundleId: 62
+url: https://posit-connect.kk.usm.my/content/5ae7ad6c-01bb-4c20-9898-4727dad93089/
+version: 1
+asMultiple: FALSE
+asStatic: TRUE

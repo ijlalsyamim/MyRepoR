@@ -1,0 +1,802 @@
+---
+title: "Assignment MVA Multiple Logistic Regression"
+format: html
+editor: visual
+---
+
+
+## Introduction
+
+# Group Member
+
+1 Ijlal Syamim bin Mohd Basri
+
+2 Muhammad Naim bin Deraman
+
+3 Mohd Aslam bin Ariffin
+
+4 'Abdul Muntaqim bin Abu Bakar
+
+5 Mohd Fahmin bin Kamarul Zaman
+
+This is our team members:
+
+![EOH Members](gambar.jpg)
+
+# Dataset
+
+We will use heart attack predition dataset obtained from kaggle.com. The reference of the dataset is as below:
+
+age: Age of the patient
+
+sex: Sex of the patient
+
+cp: Chest pain type, 0 = Typical Angina, 1 = Atypical Angina, 2 = Non-anginal Pain, 3 = Asymptomatic
+
+trtbps: Resting blood pressure (in mm Hg)
+
+chol: Cholestoral in mg/dl fetched via BMI sensor
+
+fbs: (fasting blood sugar > 120 mg/dl), 1 = True, 0 = False
+
+restecg: Resting electrocardiographic results, 0 = Normal, 1 = ST-T wave normality, 2 = Left ventricular hypertrophy
+
+thalachh: Maximum heart rate achieved
+
+oldpeak: Previous peak
+
+slp: Slope
+
+caa: Number of major vessels
+
+thall: Thalium Stress Test result ~ (0,3)
+
+exng: Exercise induced angina ~ 1 = Yes, 0 = No
+
+output: Heart Attack ~ 1 = yes, 0 = No
+
+## Method
+
+We will employ the Multiple Logistic Regression from the dataset.
+
+We want to predict the relationship between heart attack event with its associated factors. All variables will be used but we will select few variables for the purpose of modelling according to few criteria, such as clinically significant data, data which is highly spelled out in literature and clinical expert opinion.
+
+Assumptions : independence of errors/observations, correctly specified models, correct functional forms, absence of multicollinearity and fixed errors (measured without error)
+
+## Workflow Analysis
+
+Goals of model building in our regression models are:
+
+-To find best fitting model 
+-To develop the most parsimonious model 
+-To develop a biologically sound model
+
+We will apply these steps to achieved our goal 
+1) Data wrangling 
+2) Univariable Selection One of the variables is the dependent variable. The dependent variable is binary in nature. The other variable is the independent variable.The independent variable can be a numerical variable or can be a categorical variable. The conditional mean of the dependent variable Y given x when the logistic distribution is used (in a case of univariable, model has only 1 predictor) is:
+
+![slog](simplelog.jpg)
+
+3)  Variable selection -does not consider p-value\<0.25 The conditional mean of the dependent variable Y given x when the logistic distribution is used (in a case of univariable, model has k predictor) is writen as a logistic model :
+
+![logistic model](logisticmodel1.jpg)
+Where:
+
+![log model](logisticmodel2.jpg)
+
+4)  Check for multicollinearity
+
+5)  Check 2 way interaction
+
+6)  Assess goodness of fit model
+
+7)  Establish final model
+
+8)  Data presentation and Interpretation
+
+## Steps
+
+# Load Library
+
+
+```{r}
+library(tidyverse)
+library(broom)
+library(here)
+library(dplyr)
+library(psych)
+library(ggplot2)
+library(corrplot)
+library(caret)
+library(jpeg)
+library(gtsummary)
+```
+
+
+# Read data
+
+
+```{r}
+heart <- read.csv(here('raw_data', 'heart.csv'))
+```
+
+
+# view our data using str function
+
+
+```{r}
+str(heart)
+```
+
+
+# check for null value. to be safe if there is missing values in our data
+
+
+```{r}
+colSums(is.na(heart))
+```
+
+
+# check for duplicates. remove if detected
+
+
+```{r}
+duplicated_rows <- duplicated(heart)
+duplicated_rows_data <- heart[duplicated_rows, ]
+print(duplicated_rows_data)
+```
+
+```{r}
+heart1 <- heart[!duplicated_rows, ]
+```
+
+
+Our data is considered clean now. Let us proceed with descriptive analysis
+
+# describe data
+
+
+```{r}
+describe(heart1)
+```
+
+
+# summary
+
+
+```{r}
+summary(heart1)
+```
+
+
+# No ID, so add one more column
+
+
+```{r}
+heart1$ID <- seq_len(nrow(heart1))
+heart1 <- heart1[, c("ID", names(heart1)[-which(names(heart1) == "ID")])]
+```
+
+
+# Transform data as categorical
+
+
+```{r}
+heart1$sex <- factor(heart1$sex, levels = c(0, 1), labels = c("Female", "Male"))
+heart1$cp <- factor(heart1$cp, levels = c(0, 1, 2, 3), labels = c("Type 0", "Type 1", "Type 2", "Type 3"))
+heart1$fbs <- factor(heart1$fbs, levels = c(0, 1), labels = c("False", "True"))
+heart1$restecg <- factor(heart1$restecg, levels = c(0, 1, 2), labels = c("Type 0", "Type 1", "Type 2"))
+heart1$exng <- factor(heart1$exng, levels = c(0, 1), labels = c("No", "Yes"))
+heart1$thall <- factor(heart1$thall, levels = c(0, 1, 2, 3), labels = c("Type 0", "Type 1", "Type 2", "Type 3"))
+
+heart1$caa <- factor(heart1$caa, levels = c(0, 1, 2, 3, 4), labels = c("Type 0", "Type 1", "Type 2", "Type 3", "Type 4"))
+heart1$slp <- factor(heart1$slp, levels = c(0, 1, 2), labels = c("Type 0", "Type 1", "Type 2"))
+heart1$output <- factor(heart1$output, levels = c(0, 1), labels = c("No", "Yes"))
+```
+
+```{r}
+summary(heart1)
+```
+
+Looks more organize and better for our analysis later
+
+# Data exploration
+
+Histogram for numerical variables and barplot for categorical variables
+
+Numerical: age
+
+
+```{r}
+ggplot(heart1, aes(age)) + 
+  geom_histogram() + 
+  facet_grid(. ~ output)
+```
+
+
+trtbps
+
+
+```{r}
+ggplot(heart1, aes(trtbps)) + 
+  geom_histogram() + 
+  facet_grid(. ~ output)
+```
+
+
+chol
+
+
+```{r}
+ggplot(heart1, aes(chol)) + 
+  geom_histogram() + 
+  facet_grid(. ~ output)
+```
+
+
+thalachh
+
+
+```{r}
+ggplot(heart1, aes(thalachh)) + 
+  geom_histogram() + 
+  facet_grid(. ~ output)
+```
+
+
+oldpeak
+
+
+```{r}
+ggplot(heart1, aes(oldpeak)) + 
+  geom_histogram() + 
+  facet_grid(. ~ output)
+```
+
+
+Categorical:
+
+sex
+
+
+```{r}
+ggplot(heart1, aes(sex)) + 
+  geom_bar() + 
+  facet_grid(. ~ output)
+```
+
+
+cp
+
+
+```{r}
+ggplot(heart1, aes(cp)) + 
+  geom_bar() + 
+  facet_grid(. ~ output)
+```
+
+
+fbs
+
+
+```{r}
+ggplot(heart1, aes(fbs)) + 
+  geom_bar() + 
+  facet_grid(. ~ output)
+```
+
+
+restecg
+
+
+```{r}
+ggplot(heart1, aes(restecg)) + 
+  geom_bar() + 
+  facet_grid(. ~ output)
+```
+
+
+exng
+
+
+```{r}
+ggplot(heart1, aes(exng)) + 
+  geom_bar() + 
+  facet_grid(. ~ output)
+```
+
+
+slp
+
+
+```{r}
+ggplot(heart1, aes(slp)) + 
+  geom_bar() + 
+  facet_grid(. ~ output)
+```
+
+
+caa
+
+
+```{r}
+ggplot(heart1, aes(caa)) + 
+  geom_bar() + 
+  facet_grid(. ~ output)
+```
+
+
+thall
+
+
+```{r}
+ggplot(heart1, aes(thall)) + 
+  geom_bar() + 
+  facet_grid(. ~ output)
+```
+
+
+output
+
+
+```{r}
+ggplot(heart1, aes(x = output)) + 
+  geom_bar() +
+  labs(title = "Output Distribution", x = "Output", y = "Count")
+```
+
+
+We assume the output of our findings follow Bernoulli distribution. Hence, we are using Multiple Logistic Regression as our statistical analysis.
+
+## Estimation
+
+Simple Logistic Regression Numerical: age, trtbps, chol, thalachh, oldpeak
+
+1 Age
+
+
+```{r}
+slr.age <- glm(output ~ age, data = heart1, family = binomial(link = "logit"))
+summary(slr.age)
+
+```
+
+
+2 Resting Blood Pressure
+
+
+```{r}
+slr.trtbps <- glm(output ~ trtbps, data = heart1, family = binomial(link = "logit"))
+summary(slr.trtbps)
+
+```
+
+
+3 Cholesterol level
+
+
+```{r}
+slr.chol <- glm(output ~ chol, data = heart1, family = binomial(link = "logit"))
+summary(slr.chol)
+```
+
+
+4 Maximum heart rate achieved
+
+
+```{r}
+slr.thalachh <- glm(output ~ thalachh, data = heart1, family = binomial(link = "logit"))
+summary(slr.thalachh)
+```
+
+
+5 Previous peak in ECG
+
+
+```{r}
+slr.oldpeak <- glm(output ~ oldpeak, data = heart1, family = binomial(link = "logit"))
+summary(slr.oldpeak)
+```
+
+
+Categorical: sex, ep, fbs, restecg, exng, slp, caa, thall we are not using tidy to standardized our SLogR presentation. tidy mode looks cleaner but summary gave more info
+
+1 Sex
+
+
+```{r}
+slr.sex <- glm(output ~ sex, data = heart1, family = binomial(link = "logit"))
+summary(slr.sex)
+```
+
+
+2 Chest pain type
+
+
+```{r}
+slr.cp <- glm(output ~ cp, data = heart1, family = binomial(link = "logit"))
+summary(slr.cp)
+```
+
+
+3 Fasting blood sugar
+
+
+```{r}
+slr.fbs <- glm(output ~ fbs, data = heart1, family = binomial(link = "logit"))
+summary(slr.fbs)
+```
+
+
+4 Resting ECG
+
+
+```{r}
+slr.restecg <- glm(output ~ restecg, data = heart1, family = binomial(link = "logit"))
+summary(slr.restecg)
+```
+
+
+5 Exercise Induced Angina
+
+
+```{r}
+slr.exng <- glm(output ~ exng, data = heart1, family = binomial(link = "logit"))
+summary(slr.exng)
+```
+
+
+6 Slope
+
+
+```{r}
+slr.slp <- glm(output ~ slp, data = heart1, family = binomial(link = "logit"))
+summary(slr.slp)
+```
+
+
+7 Number of Major Vessels
+
+
+```{r}
+slr.caa <- glm(output ~ caa, data = heart1, family = binomial(link = "logit"))
+summary(slr.caa)
+```
+
+
+8 Thalium Stress test result
+
+
+```{r}
+slr.thall <- glm(output ~ thall, data = heart1, family = binomial(link = "logit"))
+summary(slr.thall)
+```
+
+
+From the univariable analysis, we built our model using clinically significant data, data which is highly spelled out in literature and clinical expert opinion.
+
+# Multiple Logistic Regression
+
+More than one independent covariates (predictors)
+
+We estimate the logit or the log odds. We used summary to see the results stored as mylogit We used coefficients to examine the regression coefficients
+
+# Model A : Multiple logistic regression model without interaction
+
+Predictors : age, sex, chest pain type, resting blood pressure, fasting blood sugar and exercise induced angina Outcome : Heart Attack
+
+Justification of this model: All the variables is available in basic healthcare facilities.
+
+
+```{r}
+mlr.age.sex.cp.trtbps.fbs.exng <- glm(output ~ age + sex + cp + trtbps + fbs + exng,family = 'binomial'(link = logit), 
+                    data = heart1)
+summary(mlr.age.sex.cp.trtbps.fbs.exng)
+```
+
+
+Better visualize with tidy
+
+
+```{r}
+tidy(mlr.age.sex.cp.trtbps.fbs.exng,
+     conf.int = TRUE)
+```
+
+
+Calculating the odds ratios and their confidence intervals To obtain the odds ratios and their 95% CI, we need to exponentiate using exp the regression coefficients or the betas just exponentiate
+
+
+```{r}
+tidy(mlr.age.sex.cp.trtbps.fbs.exng, 
+     exponentiate = TRUE, 
+     conf.int = TRUE)
+```
+
+
+We are not yet finish. Proceed with model B.
+
+# Model B : Multiple logistic regression model with interaction
+
+Predictors : age, sex, chest pain type, resting blood pressure, fasting blood sugar, exercise induced angina AND sex*fbs 
+Outcome : Heart Attack
+
+Interactions in statistical models signify that the effect of  multivariable on the outcome; heart attack event depends on the value of another variable which is context of sex and fasting blood sugar
+
+```{r}
+mlr.age.sex.cp.trtbps.fbs.exng.int <- glm(output ~ age + sex + cp + trtbps + fbs + exng + sex*fbs,family = 'binomial'(link = logit), 
+                    data = heart1)
+summary(mlr.age.sex.cp.trtbps.fbs.exng.int)
+```
+
+
+It shows the interaction of the model with sex and fbs is significant. Thus, we keep model B.
+
+# Inference
+
+Likelihood ratio test. We compare between Model A and B using anova.
+
+```{r}
+anova(mlr.age.sex.cp.trtbps.fbs.exng, mlr.age.sex.cp.trtbps.fbs.exng.int, 
+      test = 'Chisq')
+```
+
+
+The p-value of 0.04662 associated with the change in deviance suggests that adding the interaction term does significantly improve the fit of Model B compared to Model A. So, we choose Model B with interaction as our preliminary final model.
+
+# Model Selection
+
+Correlation matrix
+
+```{r}
+corr.num <- heart1 %>%
+  dplyr::select(age, chol, trtbps, thalachh, oldpeak) %>%
+  cor(use = 'complete.obs')
+corr.num
+```
+
+
+Easier to view in Correlogram
+
+```{r}
+corrplot(corr.num, type = 'upper', order = 'hclust')
+
+```
+
+
+No significant correlation detected
+
+# Prediction
+
+We took Model B (MLR model with interaction) as our preliminary model
+
+```{r}
+final.m <- glm(output ~ age + sex + cp + trtbps + fbs + exng + sex*fbs, family = binomial,
+               data = heart1)
+```
+
+
+Predicted log odds
+
+```{r}
+tidy(final.m, 
+     conf.int = TRUE)
+```
+
+
+Predicted odds
+
+```{r}
+tidy(final.m, 
+     exponentiate = TRUE,
+     conf.int = TRUE)
+```
+
+
+# Fitted values
+
+
+```{r}
+augment(final.m, 
+        type.predict = 'response', 
+        type.residuals = 'pearson')
+```
+
+
+# Model Checking
+
+Overall fitness
+
+accuracy
+
+sensitivity
+
+specificity
+
+
+```{r}
+final.m.prob <- 
+  augment(final.m, 
+          type.predict = 'response') |>
+  mutate(pred.class = factor(ifelse(.fitted > 0.5, 'Yes', 'No')))
+
+```
+
+```{r}
+final.m.prob$output <- factor(final.m.prob$output, levels = c('Yes', 'No'))
+final.m.prob$pred.class <- factor(final.m.prob$pred.class, levels = c('Yes', 'No'))
+```
+
+```{r}
+confusionMatrix(final.m.prob$output, final.m.prob$pred.class)
+```
+
+The model has an overall accuracy of 78.81%, model able to predict correctly 78.81% of the cases.
+
+Sensitivity (True Positive Rate) is at 78.91%, indicating that the model is good at capturing all positive cases.
+
+Specificity (True Negative Rate) is higher at 78.74%, indicating good performance in correctly identifying negative cases.
+
+
+# Linearity of Logit
+
+All numerical covariates should be checked for linearity in logits.
+
+
+```{r}
+library(mfp)
+```
+
+```{r}
+lin.age.trtbps <- 
+  mfp(output ~ fp(age) + fp(trtbps),
+      family = binomial(link = 'logit'),
+      data = heart1, verbose = T)
+```
+
+```{r}
+summary(lin.age.trtbps)
+```
+
+
+The transformed age variable has a significant impact on the response variable. The transformed trtbps variable is not statistically significant at the 0.05 significance level.
+
+# Diagnostics plots
+
+
+```{r}
+library(generalhoslem)
+library(ResourceSelection)
+library(ROCR)
+library(pROC)
+```
+
+```{r}
+logitgof(heart1$output, fitted(final.m), g = 10)
+```
+
+```{r}
+hoslem.test(heart1$output, fitted(final.m), g = 10)
+
+```
+
+
+There is discrepancy between the results could be due to variations in the statistical methodology or algorithms used by each function to calculate the Hosmer-Lemeshow test statistic could lead to different results. 
+Educated guess: low expected frequencies in variable of type of chest pain.
+
+
+```{r}
+roc_curve <- roc(output ~ predict(final.m, type = "response"), data = heart1)
+auc(roc_curve)
+plot(roc_curve, col = "red", main = "ROC Curve")
+```
+
+Area under Receiver of Operating Characteristic Curve (AUC-ROC):
+
+AUC-ROC is 87.12%, the model is considered good discriminating effect.
+
+Hence, all of above goodness of fit test shows that our model has good fit.
+
+
+# Prelim final plots
+
+
+```{r}
+plot(final.m)
+```
+
+
+
+# Influential
+
+
+```{r}
+infl <- influence.measures(final.m)
+```
+
+
+We use augment() to generate the residuals values
+
+
+```{r}
+data2.pred.res <- augment(final.m)
+data2.pred.res
+```
+
+
+Method : Standardized residuals
+Keep standardized residuals between 2 and -2 (values above 2 or lower than −2 considered as influential observations)
+
+
+```{r}
+non.influen.obs <- 
+  data2.pred.res %>% 
+  filter(.std.resid < 2 & .std.resid > -2 )
+```
+
+
+Re-run the Model with the non-influential observations (final model)
+
+
+```{r}
+final.m1 <- glm(output ~ age + sex + cp + trtbps + fbs + exng + sex*fbs, data = non.influen.obs, family = binomial)
+summary(final.m1)
+```
+
+
+Re Plot for better understanding and visualization
+
+
+```{r}
+plot(final.m1)
+```
+
+
+# Presentation
+
+
+```{r}
+tbl_regression(final.m1) %>%  
+  bold_labels() %>% italicize_levels() %>%
+  as_gt() %>%
+  gt::tab_header(title = "Multiple Logistic Regression Model",
+                 subtitle = "With Interaction")
+
+```
+
+```{r}
+tbl_regression(final.m1, exponentiate = TRUE) %>%  
+  bold_labels() %>% 
+  italicize_levels() %>%
+  as_gt() %>%
+  gt::tab_header(title = "Multiple Logistic Regression Model",
+                 subtitle = "With Interaction")
+```
+
+
+# Interpretation
+
+log[p/(1-p)] = B0 + B1x .... B(interaction)x + SE
+
+log[p/(1-p)] = 9.61950 + age(0.08) + sexMale(3.00) + cpType1(-3.0) + cpType2(-2.5) + cpType3(-3.0) + trtbps(0.03) + fbs(2.0) + exng(1.7) + sex*fbs(-2.9)
+
+With one year increase of age, the odds for heart attack increase by 1.09 with 95% CI 1.04-1.14, when adjusting to other covariates or in other words, increase risk by 9%.
+
+Being male, has odds of 19.5 of having heart attack with 95% CI 7.63, 55.7 as compared to female and after adjusting with other variables.
+
+Chest pain type 1 (atypical angina) has odds of 0.05 for heart attack event while chest pain type 2 (non angina) has odds of 0.08 and chest pain type 3 (asympyomatic) has odds of 0.05 compared to Type 0(typical angina pain) after adjusting with other covariates with 95% CI 0.01, 0.15 , 0.03, 0.18 and 0.01, 0.17 respectively.
+
+
+1 mmHg increase of resting blood pressure will increase odds of having heart attack by 1.03	with 95% CI 1.01, 1.05 after adjusting with other variables.
+
+
+Fasting blood sugar more than 6.7mmol/l have odds of heart attack by 7.54	with 95% CI 1.15, 45.5 after adjusting with other variables.
+
+
+Person with exercise induce angina has odds of heart attack by 5.41 with 95% CI	2.51, 12.2 after adjusting with other variables.
+
+Male patient with FBS more than 6.7mmol/L has odds of heart attack 0.05 with 95% CI of 0.01-0.48 after adjusting to other covariates when inferring to the this study population. Explanation: maybe male with DM is more likely to develop silent heart attack due to recall bias or interview bias
+
+
+
+

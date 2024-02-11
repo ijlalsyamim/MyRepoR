@@ -1,0 +1,640 @@
+---
+title: "Cox PH Long Practical"
+format: html
+editor: visual
+---
+# Load library
+```{r}
+library(tidyverse)
+library(psych)
+library(corrplot)
+library(knitr)
+library(tidyr)
+library(survival)
+library(survminer)
+library(broom)
+library(here)
+library(dplyr)
+library(haven)
+```
+
+# Read Data
+```{r}
+strokep <- read_dta(here("raw_data", "stroke_outcome.dta"))
+```
+
+
+```{r}
+str(strokep)
+```
+Since data are read from stata, the labels are imported. We can use as_labelled() to convert to labelled variables.
+
+convert to factor variables
+use the imported labels
+order the columns
+
+```{r}
+strokep <- strokep %>% mutate_if(is.labelled, ~as_factor(.)) %>%
+  select(id, doa, dod, event_s, everything())
+glimpse(strokep)
+```
+# Explore data
+```{r}
+summary(strokep)
+```
+Create duration using the lubridate package.
+```{r}
+strokep <- strokep %>% mutate(dur = strokep$doa %--% strokep$dod) %>%
+  mutate(dur = as.duration(dur))
+# convert to days
+strokep = strokep %>% mutate(dur_days = dur/ddays(1))
+strokep
+```
+Summary statistics for numerical data
+```{r}
+strokep %>% group_by(event) %>% summarise(mean.age = mean(age), sd.age = sd(age),
+                                           mean.gcs = mean(gcs), sd.gcs = sd(gcs),
+                                           mean.sbp = mean(sbp), sd.sbp = sd(sbp),
+                                           mean.dbp = mean(dbp), sd.dbp = sd(dbp))
+```
+Summary statistics for categorical data
+```{r}
+strokep %>% count(event, dm2) 
+```
+```{r}
+strokep %>% count(event, hpt2)
+```
+```{r}
+strokep %>% count(event, race2)
+
+```
+
+# Kaplan-Meir Survival estimates
+Kaplan-Meier estimates for overall
+In addition to normal EDA, you need to examine the survivor function to describe your survival data. This can be done via Kaplan-Meier (KM) analysis.
+
+First, we need to load the survival package
+
+In KM analysis, you can estimate the survival probability at certain times including their 95% confidence intervals. We will name the object as KMdata1.
+
+We use ~ 1 to estimate the survival probablities for all subjects.
+
+The summary() function will provide the survival information (number of events, survival probabilities etc) estimated from KM analysis.
+
+```{r}
+KM1 <- survfit(Surv(time = dur_days, event == 'dead') ~ 1, 
+               type = "kaplan-meier", data = strokep)
+summary(KM1)
+```
+
+```{r}
+ggsurvplot(KM1, data = strokep, risk.table = TRUE, 
+           linetype = c(1,2), pval = TRUE)
+```
+# Kaplan-Meier estimates for groups
+You can extend the analysis to different levels of a group (categorical/factor) variable. We will estimate the survival probabilites for male and female level in group sex.
+
+```{r}
+KM1.g <- survfit(Surv(time = dur_days, event == 'dead') ~ sex, 
+                     type = "kaplan-meier", data = strokep)
+summary(KM1.g)
+```
+Plot the survival curves for sex
+```{r}
+ggsurvplot(KM1.g, data = strokep, risk.table = TRUE, 
+           linetype = c(1,2), pval = TRUE)
+```
+Now, for
+
+diabetes status (dm2)
+hypertension status (hpt2)
+
+Diabetes
+```{r}
+KM1.dm <- survfit(Surv(time = dur_days, event == 'dead') ~ dm2, 
+                     type = "kaplan-meier", data = strokep)
+summary(KM1.dm)
+```
+```{r}
+ggsurvplot(KM1.dm, data = strokep, risk.table = TRUE, 
+           linetype = c(1,2), pval = TRUE)
+```
+
+Hypertension
+```{r}
+KM1.hpt <- survfit(Surv(time = dur_days, event == 'dead') ~ hpt2, 
+                     type = "kaplan-meier", data = strokep)
+summary(KM1.hpt)
+```
+```{r}
+ggsurvplot(KM1.hpt, data = strokep, risk.table = TRUE, 
+           linetype = c(1,2), pval = TRUE)
+```
+# Estimate the survival function
+Using quantile() function, you can get the estimated survival duration for any percentile (with their 95% CI).
+
+For example, to get the value for survival duration at 25, 50 (median) and 75 percentile, for overall and for each male and female:
+
+```{r}
+quantile(KM1, probs = c(0.25, 0.50, 0.75))
+```
+
+```{r}
+quantile(KM1.dm, probs = c(0.25, 0.50, 0.75))
+```
+# Estimate the survival probability
+If you use summary() function and specify the arguments for times to get the estimated survival probability.
+
+For example, to estimate the cumulative survival probabality at that specific time of follow-up for example at time 5 days, 10 days, 20 days, 40 days and 60 days.
+
+```{r}
+strokep %>% group_by(event) %>% 
+  summarize(min.dur = min(dur_days), max.dur = max(dur_days))
+```
+
+```{r}
+summary(KM1, times = c(5, 10, 20, 40, 60))
+```
+# Comparing the survival estimates between levels of a group (categorical) variable
+To test if the survival estimates differ between groups (male vs female), you can perform a few tests. The test includes log-rank (probably the most well-known, also the default in R), peto-peto, Weibull and a few more.
+
+They compare the difference in the observed and expected survivors. The difference between them is that each one uses different weight for calculation.
+
+```{r}
+logrank.sex <- survdiff(Surv(time = dur_days, event == 'dead') ~ sex, 
+                        data = strokep, rho = 0)
+peto.sex <- survdiff(Surv(time = dur_days, event == 'dead') ~ sex, 
+                     data = strokep, rho = 1)
+logrank.dm <- survdiff(Surv(time = dur_days, event == 'dead') ~ dm2, 
+                        data = strokep, rho = 0)
+peto.dm <- survdiff(Surv(time = dur_days, event == 'dead') ~ dm2, 
+                     data = strokep, rho = 1)
+```
+
+```{r}
+logrank.sex
+```
+```{r}
+peto.sex
+```
+```{r}
+logrank.dm
+```
+```{r}
+peto.dm
+```
+# Comparing the survival estimates for numerical variables
+To compare survival estimates for numerical variables such as bmi, we need to categorize the numerical variable.
+
+You can categorize numerical using factor() function.
+```{r}
+summary(strokep$sbp)
+```
+In this example, using cut(), we create a factor variable named as c.bmi in the dataset data1. The new variable c.bmi will be categorized to:
+
+min to 140 (≤140
+)
+141 to 160 (141-160)
+161 and above (>160
+)
+
+```{r}
+strokep <- strokep %>% mutate(sbp.c = cut(sbp, c(0, 140, 160, 300), 
+                                          labels = c('min-140', '141-160', 'above 160')))
+strokep %>% count(sbp.c)
+```
+Estimate the survival estimates for categories of SBP
+
+```{r}
+KM1.sbp <- survfit(Surv(time = dur_days, event == 'dead') ~ sbp.c, 
+                     type = "kaplan-meier", data = strokep)
+summary(KM1.sbp)
+```
+Now, we perform the log-rank test:
+```{r}
+logrank.sbp <- survdiff(Surv(time = dur_days, event = event == 'dead') ~ sbp.c,
+                        data = strokep, rho = 0)
+logrank.sbp
+```
+Now, plot the Kaplan-meier estimates
+
+```{r}
+ggsurvplot(KM1.sbp, data = strokep, risk.table = TRUE, 
+           linetype = c(1, 2, 3), pval = TRUE)
+```
+# Cox proportional hazard (PH) regression
+The Cox PH regression is another model of generalized linear model class.
+
+The outcome in Cox PH regression is also the time to an event. The covariates (independent variables) form the linear predictor. In Cox PH regression, the baseline hazard function distribution is not specified. This, it is classed as a semi-parametric analysis.
+
+Univariable Cox PH regression for numerical covariate
+Now, we use variable gcs and dm2 as the covariates in the model. The default method in estimating the regression parameters in Cox PH regression in R is the Efron method. Other methods include Breslow method. Stata uses Breslow method as the default.
+
+The outcome variables are;
+
+dur_days : time variable
+event : event variable where died is the event of interest.
+The combination of 1 and 2 makes the time-to-event dataset
+
+Efron method
+
+For GCS
+```{r}
+cox.gcs <- coxph(Surv(time = dur_days, event = event == 'dead') ~ gcs, 
+                 data = strokep)
+cox.gcs
+```
+For SBP
+```{r}
+cox.sbp <- coxph(Surv(time = dur_days, event = event == 'dead') ~ sbp, 
+                 data = strokep)
+cox.sbp
+```
+Breslow method
+
+For GCS
+```{r}
+cox.gcs.breslow <- coxph(Surv(time = dur_days, event = event == 'dead') ~ gcs, 
+                 data = strokep, method = 'breslow')
+cox.gcs.breslow
+```
+
+For SBP
+```{r}
+cox.sbp.breslow <- coxph(Surv(time = dur_days, event = event == 'dead') ~ sbp, 
+                 data = strokep, method = 'breslow')
+cox.sbp.breslow
+```
+Univariable Cox PH regression for categorical covariate
+
+Now, we use sex and sbp.c as the only covariate
+```{r}
+# Efron
+cox.sex <- coxph(Surv(time = dur_days, event = event == 'dead') ~ sex, 
+                 data = strokep)
+cox.sbp.c <- coxph(Surv(time = dur_days, event = event == 'dead') ~ sbp.c, 
+                 data = strokep)
+```
+
+The results are more elaborated here because we use the function summary(our_model)
+```{r}
+summary(cox.sex)
+```
+
+```{r}
+summary(cox.sbp.c)
+```
+We can show nicer (in tidyverse language it is known as tidier) results by using broom package
+
+```{r}
+library(broom)
+tidy(cox.sex)
+```
+
+```{r}
+tidy((cox.sbp.c))
+```
+# Multivarible Cox PH regression
+Main effect models
+In multiple Cox PH regression, you will have more than one covariates.
+```{r}
+cox.main <- coxph(Surv(time = dur_days, event = event == 'dead') ~  gcs  + age + 
+                  dm2 + hpt2, data = strokep)
+summary(cox.main)
+```
+Model with interaction
+Between a numerical and a numerical covariate
+
+```{r}
+cox.gcs.age.ia <- coxph(Surv(time = dur_days, event = event == 'dead') ~  gcs  + age + 
+                       dm2 + hpt2 + gcs:age, data = strokep)
+summary(cox.gcs.age.ia)
+```
+
+Categorical and categorical
+```{r}
+cox.dm.hpt.ia <- coxph(Surv(time = dur_days, event = event == 'dead') ~  gcs  +
+                age + dm2 + hpt2 + dm2:hpt2, data = strokep)
+summary(cox.dm.hpt.ia)
+```
+Numerical and categorical
+
+```{r}
+cox.gcs.dm.ia <- coxph(Surv(time = dur_days, event = event == 'dead') ~  gcs  +
+                age + dm2 + hpt2 + gcs:dm2, data = strokep)
+summary(cox.gcs.dm.ia)
+```
+Models comparison
+You can compare different models using the likelihood ratio (LR) test. To do so, use anova() function and set the argument for chi-square test.
+
+```{r}
+anova(cox.main, cox.gcs.age.ia, test = 'Chisq')
+```
+```{r}
+anova(cox.main, cox.dm.hpt.ia, test = 'chisq')
+```
+```{r}
+anova(cox.main, cox.gcs.age.ia, cox.dm.hpt.ia, test = 'Chisq')
+```
+# Plotting the Kaplan-meier estimates based on Cox PH model
+Model-checking
+Linearity in hazard assumption
+Check only for numerical covariates
+
+```{r}
+ggcoxfunctional(Surv(time = dur_days, event = event == 'dead') ~  gcs + age +
+                  sbp, data = strokep)
+```
+Proportional hazard assumption
+The main assumption in Cox PH regression is that the estimated hazard is proportional across the follow-up time.
+
+To test the proportional hazards assumption for a Cox regression model fit, in R, we can use cox.zph() function.
+
+You can use the km (default), rank, log or identity to specify the survival times (in the x-axis) for the transform argument. The transform argument is a character string specifying how the survival times should be transformed before the test is performed.
+
+Using plot() function after cox.zph() will produce a plot with scaled Schoenfeld residuals on the y-axis and time (or transformed time) on the x-axis.
+
+The test is based on the scaled Schoenfeld residuals. The GLOBAL test result shows the overall test of proportionality of hazard. While the specific test tests the proportionality of hazard for each covariate in the Cox PH model.
+
+
+The km method
+```{r}
+prop.h <- cox.zph(cox.main, transform = 'km', global = TRUE)
+prop.h
+```
+```{r}
+plot(prop.h)
+```
+
+The rank method
+```{r}
+prop.h.r <- cox.zph(cox.main, transform = 'rank')
+prop.h.r
+```
+```{r}
+plot(prop.h.r)
+```
+Or you can use thise function from survminer package
+
+For km
+```{r}
+ggcoxzph(prop.h)
+```
+For rank
+```{r}
+ggcoxzph(prop.h.r)
+```
+# Model diagnostics
+Prediction
+Usually, we make prediction based on new data.
+
+So, now let us make a new data. We name the dataset as newdata.
+
+We will use expand.grid() function to create a dataframe quickly.
+
+Remember, we (for the illustration purpose) choose model cox.main as our preferred model.
+
+```{r}
+summary(cox.main)
+```
+Which can be written tidier as
+
+with log hazard
+with hazard ratio
+
+```{r}
+cox.main.h <- tidy(cox.main, conf.int = TRUE)
+cox.main.hr <- tidy(cox.main, exponentiate = TRUE, conf.int = TRUE)
+```
+
+The results are
+```{r}
+bind_cols(cox.main.h, cox.main.hr)
+
+```
+
+Now, we create a new data frame for the purpose of prediction
+```{r}
+new_data <- expand.grid(gcs = c(5, 10, 12),
+                        age = c(40, 50, 70),
+                        dm2 = c('no', 'yes'),
+                        hpt2 = c('no', 'yes'))
+new_data
+```
+
+The linear predictor
+```{r}
+mean(strokep$gcs)
+```
+```{r}
+mean(strokep$age)
+```
+```{r}
+summary(strokep$dm2)
+```
+```{r}
+# mean for dm2
+101/262 
+```
+```{r}
+# mean for hpt2 
+summary(strokep$hpt2)
+```
+```{r}
+171/262
+```
+```{r}
+# gcs * dm
+strokep <- strokep %>% mutate(dm.num = as.integer(dm2), gcs.dm = gcs*dm.num)
+mean(strokep$gcs.dm)
+```
+We will use main effect models cox.mv
+
+```{r}
+# and I choose type = 'lp'
+predict(cox.main, newdata = new_data, type = 'lp')
+```
+
+
+```{r}
+#1st obs = 1.0707
+augment(cox.main, newdata = new_data)
+```
+Manual calculation
+
+For the first row, the lp is predicted as:
+
+```{r}
+predict(cox.main, newdata = new_data, type = 'lp')
+```
+```{r}
+# 1st observation = 1.0707
+```
+And the for the first row, the value for the covariates are:
+```{r}
+new_data[1,]
+```
+So, the calculate manually, you need to do this:
+```{r}
+cox.main$coefficients[1]*(5 - 12.02) + 
+  cox.main$coefficients[2]*(40 - 60.75) +
+  cox.main$coefficients[3]*(0 - 0.3855) +
+  cox.main$coefficients[4]*(0 - 0.6527) 
+```
+It is not gcs. It is the linear predictor value (the fitted value from tidy function)
+
+For model with interaction, you may either use the predict() or the augment() function
+```{r}
+# and I choose type = 'lp'
+predict(cox.gcs.age.ia, newdata = new_data, type = 'lp')
+```
+
+```{r}
+augment(cox.gcs.age.ia, newdata = new_data)
+```
+The risk score
+This calculates the relative risk (Hazard Ratio) of created populations against the population sample (population) average, which are
+
+mean gcs = 12.02
+mean age = 60.75
+proportion of diabetes = 38.5 percent
+proportion of hypertension = 65.3 percent
+The first observation shows that this population has
+
+gcs = 5
+age = 40
+no diabetes
+no hypertension
+```{r}
+predict(cox.main, newdata = new_data, type = 'risk')
+```
+This population has 2.92 times higher risk for death (the event) compared to the average population.
+
+Refer : https://stats.stackexchange.com/questions/44896/how-to-interpret-the-output-of-predict-coxph
+
+For model with interaction
+```{r}
+predict(cox.gcs.dm.ia, newdata = new_data, type = 'risk')
+```
+The expected number of events for a given follow-up time
+This will calculate the expected number of events for a given time. In this example, we set the time at 5 days, 20 days and 50 days. The model will calculate the number of deaths for the each of the given time.
+
+For this, we need to add variable event and dur_days
+```{r}
+new_data2 <- expand.grid(event = 'dead', dur_days = c(5, 20, 50))
+new_data2
+```
+And combine with the previous data frame
+```{r}
+new_data3 <- data.frame(new_data, new_data2)
+head(new_data3)
+```
+And the predicted number of events are
+```{r}
+pred.exp <- predict(cox.main, newdata = new_data3, type = 'expected')
+pred.exp
+```
+```{r}
+cbind(new_data3, pred.exp)
+```
+Residuals
+We can use residuals to assess for model fitness. They are useful to check for overall model fitness or for individual subjects fitness. The residuals can indicate the presence of outliers or influential subjects in our model.
+
+residuals() can be calculated to produce martingale, deviance, score or Schoenfeld residuals for a Cox proportional hazards model.
+
+Score residuals
+This give the score residuals for each predictor in the cox model
+```{r}
+score.cox <- resid(cox.main, type = "score")
+head(score.cox)
+
+```
+Martingale residuals
+```{r}
+marti.cox <- resid(cox.main, type = "martingale")
+head(marti.cox)
+```
+Schoenfeld residuals
+```{r}
+schoen.cox <- resid(cox.main, type = "schoenfeld")
+head(schoen.cox)
+```
+Scaled Schoenfeld residuals
+```{r}
+sschoen.cox <- resid(cox.main, type = "scaledsch")
+head(sschoen.cox)
+```
+dfbeta
+```{r}
+dfbeta.cox <- resid(cox.main, type = "dfbeta")
+head(dfbeta.cox)
+```
+Residuals plots
+Plot to identify the outliers using score residuals.
+```{r}
+plot(strokep$gcs, score.cox[,2], ylab="Score residuals")
+```
+
+
+```{r}
+plot(strokep$dm2, score.cox[,1], ylab="Score residuals")
+```
+
+Plot to identify the outliers using martingale residuals.
+```{r}
+plot(strokep$age, marti.cox, ylab = "Martingale residuals for bmi")
+```
+
+
+```{r}
+plot(strokep$hpt2, marti.cox , ylab = "Martingale residuals for sex")
+```
+```{r}
+plot(marti.cox, type = 'h', main = "Martingale residuals", ylab = "dfbetas",lwd = 2)
+```
+
+Using dfbetas, we can assess for the presence of influential subjects.
+```{r}
+plot(strokep$age, dfbeta.cox[,2], main = "Dfbetas for bmi", ylab = "dfbetas")
+```
+
+
+```{r}
+plot(strokep$gcs, dfbeta.cox[,2], type = 'h', 
+     main = "Dfbetas for bmi", ylab = "dfbetas",lwd = 2)
+```
+
+But you use the augment() function to do similar tasks as above. The resulting datasets consists of
+
+the fitted variable
+the std error of the fitted variable
+the residuals
+```{r}
+pred.cox.main <- augment(cox.main, data = strokep)
+pred.cox.main
+
+```
+# Influential plots
+This function is from survminer package
+
+Using deviance
+
+```{r}
+ggcoxdiagnostics(cox.main, type = 'deviance', linear.predictions = FALSE)
+```
+
+Using martingale
+```{r}
+ggcoxdiagnostics(cox.main, type = 'martingale', linear.predictions = FALSE)
+```
+
+Using dfbeta
+```{r}
+ggcoxdiagnostics(cox.main, type = 'dfbeta', linear.predictions = FALSE)
+```
+
+Using dfbeta for interaction models
+```{r}
+ggcoxdiagnostics(cox.gcs.dm.ia, type = 'dfbeta', linear.predictions = FALSE)
+```
+
